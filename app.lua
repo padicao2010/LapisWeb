@@ -82,7 +82,7 @@ app:post("new", "/new", capture_errors(function(self)
     
     local project = assert_error(MProject:create({ pname = self.params.name, pdesc = self.params.desc }))
     
-    lfs:mkdir("download/" .. project.pid)
+    lfs.mkdir("download/" .. project.pid)
     return { redirect_to = self:url_for("index") }
 end))
 
