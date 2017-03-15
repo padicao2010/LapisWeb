@@ -5,14 +5,22 @@
                     <p><%= project.pdesc %></p>
                     <hr />
                     <h3>共 <%= #files %> 个文件：</h3>
-                    <% for _, f in ipairs(files) do %>
-                    <div class="list-group">
-                        <a href="<%= url_for('file', f) %>">
-                            <h4 class="list-group-item"><%= f.fname %></h4>
-                            <p class="list-group-item">共 <%= f.fline %> 行</p>
-                        </a>
-                    </div>
-                    <% end %>
+                    <table>
+                        <tr>
+                            <th>文件</th>
+                            <th>行数</th>
+                            <th>操作</th>
+                        </tr>
+                        <% for _, f in ipairs(files) do %>
+                        <tr>
+                            <td><a href="<%= url_for('file', f) %>">
+                                <%= f.fname %>
+                            </a></td>
+                            <td><%= f.fline %></td>
+                            <td><a>下载</a></td>
+                        </tr>
+                        <% end %>
+                    </table>
                     <hr />
                     <h3>上传文件</h3>
                     <form action="<%= url_for("project", project) %>" method="post" enctype="multipart/form-data" >
