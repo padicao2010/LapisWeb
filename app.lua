@@ -52,4 +52,18 @@ app:get("project", "/project/:pid", capture_errors(function(self)
     return { render = true }
 end))
 
+app:post("project", "/project/:pid", capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "pid", exists = true, is_integer = true },
+        { "uploadfile", exists = true, is_file = true },
+    })
+    assert_error(MFile:create({
+        pid = pid,
+        fname = self.params.filename,
+        ftext = self.params.content
+    }))
+
+    return { redirect_to = self:url_for("project", { pid = pid } }
+end))
+
 return app
