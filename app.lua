@@ -189,7 +189,7 @@ app:get("merge", "/merge/:pid/:fid", capture_errors(function(self)
     
     local offset = 1
     local outp = string.format("download/%d/%s", file.pid, file.fname)
-    local output = io.open(outp, "w")
+    local output = assert(io.open(outp, "w"))
     for _, l in ipairs(lines) do
         if l.pos > offset then
             output:write(string.sub(content, offset, l.pos - 1))
