@@ -141,10 +141,33 @@ app:post("update", "/update/:pid/:fid/:pageid", capture_errors(function(self)
         { "pageid", exists = true, is_integer = true },
     })
     
+    local pid = self.params.pid
+    local fid = self.params.fid
+    local pageid = self.params.pageid
+    
+    for k, v in pairs(self.params) do
+        local lid = string.match(k, "line(%d+)")
+        if lid then
+            lid = tonumber(lid)
+            v = string.gsub(v, "\r", "")
+            local line = assert_error(MLine:find(fid, lid))
+            if line and line.trstr ~= v then
+                assert_error(MLog:create({
+                    fid = fid,
+                    lid = lid,
+                    bfstr = line.trstr
+                }))
+                
+                line.trstr = v
+                line:update("trstr")
+            end
+        end
+    end
+    
     local t = {
-        pid = self.params.pid,
-        fid = self.params.fid,
-        pageid = self.params.pageid + 1
+        pid = pid,
+        fid = fid,
+        pageid = (tonumber(pageid) or 0) + 1
     }
     return { redirect_to = self:url_for("file", t) }
 end))

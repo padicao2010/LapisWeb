@@ -8,24 +8,20 @@
                     </h3>
                     <p>共 <%= file.fline %> 行，<%= pageCount %> 页，第 <%= pageIndex %> 页</p>
                     <hr />
-                    <form action="<%= url_for("update", file) ?>" method='post'>
-                        <table class="table table-hover">
+                    <form action="<%= url_for("update", { pid=file.pid,fid=file.fid,pageid=pageIndex }) %>" method='post'>
+                        <table class="table table-responsive">
                             <thead>
                                 <tr>
-                                    <th>Line</th>
-                                    <th>Content</th>
+                                    <th>行号</th>
+                                    <th>内容</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <% for _, l in ipairs(lines) do %>
                                 <tr>
                                     <td><%= l.lid %></td>
-                                    <td><pre style="word-break: normal;"><code class="python">
-                                            <%= l.orgstr %>
-                                        </pre></code>
-                                        <textarea class="form-control" name="line<%= l.lid %>">
-                                            <%= l.trstr %>
-                                        </textarea>
+                                    <td><pre style="word-break: normal;"><code class="python"><%= l.orgstr %></pre></code>
+                                        <textarea class="form-control" name="line<%= l.lid %>"><%= l.trstr %></textarea>
                                     </td>
                                 </tr>
                                 <% end %>
