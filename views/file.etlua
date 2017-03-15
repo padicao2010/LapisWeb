@@ -21,7 +21,7 @@
                                 <tr>
                                     <td><%= l.lid %></td>
                                     <td><pre style="word-break: normal;"><code class="python"><%= l.orgstr %></pre></code>
-                                        <textarea class="form-control" name="line<%= l.lid %>"><%= l.trstr %></textarea>
+                                        <textarea class="form-control" name="line<%= l.lid %>" rows="3"><%= l.trstr %></textarea>
                                     </td>
                                 </tr>
                                 <% end %>
