@@ -184,21 +184,26 @@ app:get("merge", "/merge/:pid/:fid", capture_errors(function(self)
     local fid = self.params.fid
     local file = MFile:find(fid)
     local filetext = MFileText:find(fid)
+    local content = filetext.ftext
     local lines = MLine:select("where fid = ? order by lid asc", fid)
     
     local offset = 1
-    local outp = "download/" .. file.fname
+    local outp = string.format("download/%d/%s", file.pid, file.fname)
     local output = io.open(outp, "w")
     for _, l in ipairs(lines) do
         if l.pos > offset then
-            output:write(string.sub(ts, offset, l.pos - 1))
+            output:write(string.sub(content, offset, l.pos - 1))
         end
-        local eols, eole = string.find(ts, l.pos, "\r?\n")
-        local s = string.sub(ts, l.pos, eos and eols - 1)
+        local eols, eole = string.find(content, "\r?\n", l.pos)
+        local s = string.sub(content, l.pos, eols and eols - 1)
         
-        output:write(string.gsub(s, "\"(.*)\"", l.trstr))
+        local strs, stre = string.find(s, "\".*\"")
+        output:write(string.sub(s, 1, strs))
+        output:write(l.trstr)
+        output:write(string.sub(s, stre))
+        
         if eols then
-            output:write(string.gsub(s, eols, eole))
+            output:write(string.sub(content, eols, eole))
             offset = eole + 1
         else
             break
