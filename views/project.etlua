@@ -7,9 +7,9 @@
                     <h3>共 <%= #files %> 个文件：</h3>
                     <% for _, f in ipairs(files) do %>
                     <div class="list-group">
-                        <a>
+                        <a href="<%= url_for('file', f) %>">
                             <h4 class="list-group-item"><%= f.fname %></h4>
-                            <p>共 <%= f.fline %> 行</p>
+                            <p class="list-group-item">共 <%= f.fline %> 行</p>
                         </a>
                     </div>
                     <% end %>

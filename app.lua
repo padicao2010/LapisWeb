@@ -26,8 +26,8 @@ local function analysisFile(file)
     local count = 0
     
     while true do
-        local eols, eole = string.find(file, "\r?\n", offset)
-        local l = string.sub(file, offset, eols and eols - 1)
+        local eols, eole = string.find(file.ftext, "\r?\n", offset)
+        local l = string.sub(file.ftext, offset, eols and eols - 1)
         local s = string.match(l, "\"(.*)\"")
         if s then
             if not orig then
@@ -84,7 +84,7 @@ app:get("project", "/project/:pid", capture_errors(function(self)
     self.project = assert_error(MProject:find(self.params.pid))
     self.files = assert_error(MFile:select(
         "where pid = ?", self.params.pid,
-        { fields = {"fid", "fname", "fline"} }))
+        { fields = "pid, fid, fname, fline"} ))
     
     return { render = true }
 end))
@@ -109,5 +109,17 @@ app:post("project", "/project/:pid", capture_errors(function(self)
 
     return { redirect_to = self:url_for("project", self.params) }
 end))
+
+app:get("file", "/file/:pid/:fid", capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "pid", exists = true, is_integer = true },
+        { "fid", exists = true, is_integer = true },
+    })
+    
+    local file = assert_error(MFile:find(self.params.fid))
+    local lines = assert_error(MLine:select("where fid = ?", file.fid))
+    
+    return { render = true }
+}
 
 return app
