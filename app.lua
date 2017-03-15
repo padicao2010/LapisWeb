@@ -28,4 +28,8 @@ app:get("new", "/new", function(self)
     return { render = "newproject" }
 end)
 
+app:post("new", "/new", function(self)
+    return { redirect_to = self:url_for("index") }
+end)
+
 return app
