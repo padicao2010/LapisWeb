@@ -18,10 +18,14 @@ local app = lapis.Application()
 app:enable("etlua")
 app.layout = require "views.layout"
 
-app:get("/", function(self)
+app:get("index", "/", function(self)
     self.nproj = MProject:count()
     self.projects = MProject:select()
     return { render = "index" }
+end)
+
+app:get("new", "/new", function(self)
+    return { render = "newproject" }
 end)
 
 return app
