@@ -1,9 +1,9 @@
         <div class="container">
             <div class="row">
                 <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
-                    <h3>Lua Globals</h3>
-                    <% for k, v in pairs(_G) do %>
-                    <p><%= string.format("%s : %s", tostring(k), tostring(v)) %></p>
+                    <h3>项目：</h3>
+                    <% for k, v in pairs(projects) do %>
+                    <p><%= v %></p>
                     <% end %>
                 </div>
             </div>
