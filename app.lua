@@ -1,6 +1,7 @@
 local lapis = require("lapis")
 local app_helpers = require("lapis.application")
 local validate = require("lapis.validate")
+local lfs = require("lfs")
 
 local PER_PAGE = 10
 
@@ -79,7 +80,9 @@ app:post("new", "/new", capture_errors(function(self)
         { "desc", exists = true, min_length = 1, max_length = 254 },
     })
     
-    assert_error(MProject:create({ pname = self.params.name, pdesc = self.params.desc }))
+    local project = assert_error(MProject:create({ pname = self.params.name, pdesc = self.params.desc }))
+    
+    lfs:mkdir("download/" .. project.pid)
     return { redirect_to = self:url_for("index") }
 end))
 
@@ -155,7 +158,7 @@ app:post("update", "/update/:pid/:fid/:pageid", capture_errors(function(self)
                 assert_error(MLog:create({
                     fid = fid,
                     lid = lid,
-                    bfstr = line.trstr
+                    bfstr = v
                 }))
                 
                 line.trstr = v
@@ -170,6 +173,40 @@ app:post("update", "/update/:pid/:fid/:pageid", capture_errors(function(self)
         pageid = (tonumber(pageid) or 0) + 1
     }
     return { redirect_to = self:url_for("file", t) }
+end))
+
+app:get("merge", "/merge/:pid/:fid", capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "pid", exists = true, is_integer = true },
+        { "fid", exists = true, is_integer = true },
+    })
+    
+    local fid = self.params.fid
+    local file = MFile:find(fid)
+    local filetext = MFileText:find(fid)
+    local lines = MLine:select("where fid = ? order by lid asc", fid)
+    
+    local offset = 1
+    local outp = "download/" .. file.fname
+    local output = io.open(outp, "w")
+    for _, l in ipairs(lines) do
+        if l.pos > offset then
+            output:write(string.sub(ts, offset, l.pos - 1))
+        end
+        local eols, eole = string.find(ts, l.pos, "\r?\n")
+        local s = string.sub(ts, l.pos, eos and eols - 1)
+        
+        output:write(string.gsub(s, "\"(.*)\"", l.trstr))
+        if eols then
+            output:write(string.gsub(s, eols, eole))
+            offset = eole + 1
+        else
+            break
+        end
+    end
+    output:close()
+    
+    return { redirect_to = "/" .. outp }
 end))
 
 return app

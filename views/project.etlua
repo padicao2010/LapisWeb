@@ -20,7 +20,7 @@
                                     <%= f.fname %>
                                 </a></td>
                                 <td><%= f.fline %></td>
-                                <td><a>下载</a></td>
+                                <td><a href="<%= url_for("merge', f) %>">下载</a></td>
                             </tr>
                             <% end %>
                         </tbody>
