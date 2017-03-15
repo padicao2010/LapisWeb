@@ -9,7 +9,6 @@
                     <a>
                         <ul class="list-group">
                             <li class="list-group-item"><%= f.fname %></li>
-/pre></li>
                         </ul>
                     </a>
                     <% end %>

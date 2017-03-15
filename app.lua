@@ -57,10 +57,11 @@ app:post("project", "/project/:pid", capture_errors(function(self)
         { "pid", exists = true, is_integer = true },
         { "uploadfile", exists = true, is_file = true },
     })
+    local file = self.params.uploadfile
     assert_error(MFile:create({
         pid = self.params.pid,
-        fname = self.params.filename,
-        ftext = self.params.content
+        fname = file.filename,
+        ftext = file.content
     }))
 
     return { redirect_to = self:url_for("project", self.params) }
