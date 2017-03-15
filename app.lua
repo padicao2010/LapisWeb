@@ -114,14 +114,20 @@ app:post("project", "/project/:pid", capture_errors(function(self)
     return { redirect_to = self:url_for("project", self.params) }
 end))
 
-app:get("file", "/file/:pid/:fid", capture_errors(function(self)
+app:get("file", "/file/:pid/:fid(/:pageid)", capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
         { "fid", exists = true, is_integer = true },
+        { "pageid", is_integer = true },
     })
     
+    self.project = assert_error(MProject:find(self.params.pid))
     self.file = assert_error(MFile:find(self.params.fid))
-    self.lines = assert_error(MLine:select("where fid = ?", self.file.fid))
+    local paginated = MLine:paginated("where fid = ? order by lid", self.file.fid, { per_page = 10 })
+    self.pageIndex = self.params.pageid or 1
+    self.lines = paginated:get_page(self.pageIndex)
+    self.pageCount = paginated:num_pages()
+    -- self.lineCount = paginated:total_items()
     
     return { render = true }
 end))
