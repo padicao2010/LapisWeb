@@ -14,6 +14,7 @@ CREATE TABLE tr_project(
 CREATE TABLE tr_file(
   fid INT NOT NULL AUTO_INCREMENT,
   pid INT NOT NULL,
+  fline INT default 0,
   fname VARCHAR(24) NOT NULL,
   ftext LONGTEXT NOT NULL,
   PRIMARY KEY(fid),
@@ -23,6 +24,7 @@ CREATE TABLE tr_file(
 CREATE TABLE tr_line(
   lid INT NOT NULL,
   fid INT NOT NULL,
+  pos INT NOT NULL,
   orgstr TEXT NOT NULL,
   trstr TEXT DEFAULT "",
   PRIMARY KEY(fid, lid),

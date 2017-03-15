@@ -2,15 +2,16 @@
             <div class="row">
                 <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
                     <h2><%= project.pname %></h2>
-                    <pre><%= project.pdesc %></pre>
+                    <p><%= project.pdesc %></p>
                     <hr />
                     <h3>共 <%= #files %> 个文件：</h3>
                     <% for _, f in ipairs(files) do %>
-                    <a>
-                        <ul class="list-group">
-                            <li class="list-group-item"><%= f.fname %></li>
-                        </ul>
-                    </a>
+                    <div class="list-group">
+                        <a>
+                            <h4 class="list-group-item"><%= f.fname %></h4>
+                            <p>共 <%= f.fline %> 行</p>
+                        </a>
+                    </div>
                     <% end %>
                     <hr />
                     <h3>上传文件</h3>

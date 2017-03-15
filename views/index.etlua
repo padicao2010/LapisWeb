@@ -8,12 +8,12 @@
                     </h3>
                     <hr />
                     <% for _, p in ipairs(projects) do %>
-                    <a href="<%= url_for("project", p) %>">
-                        <ul class="list-group">
-                            <li class="list-group-item"><%= p.pname %></li>
-                            <li class="list-group-item"><pre><%= p.pdesc %></pre></li>
-                        </ul>
-                    </a>
+                    <div class="list-group">
+                        <a href="<%= url_for("project", p) %>">
+                            <h4 class="list-group-item"><%= p.pname %></h4>
+                            <p class="list-group-item"><%= p.pdesc %></p>
+                        </a>
+                    </div>
                     <% end %>
                 </div>
             </div>

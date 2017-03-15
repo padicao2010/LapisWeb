@@ -19,6 +19,41 @@ local MLog = Model:extend("tr_log", {
     primary_key = { "logid" }
 })
 
+local function analysisFile(file)
+    local offset = 1
+    local line = 1
+    local orig
+    local count = 0
+    
+    while true do
+        local eols, eole = string.find(file, "\r?\n", offset)
+        local l = string.sub(file, offset, eols and eols - 1)
+        local s = string.match(l, "\"(.*)\"")
+        if s then
+            if not orig then
+                orig = string.gsub(s, "^(%s+)", "")
+            else
+                assert_error(MLine:create({
+                    lid = line,
+                    fid = file.fid,
+                    pos = offset,
+                    orgstr = orig,
+                    trstr = s
+                }))
+                count = count + 1
+                orig = nil
+            end
+        end
+        if not eols then
+            break
+        else
+            offset = eole + 1
+            line = line + 1
+        end
+    end
+    return count
+end
+
 local app = lapis.Application()
 app:enable("etlua")
 app.layout = require "views.layout"
@@ -47,7 +82,9 @@ app:get("project", "/project/:pid", capture_errors(function(self)
         { "pid", exists = true, is_integer = true },
     })
     self.project = assert_error(MProject:find(self.params.pid))
-    self.files = assert_error(MFile:select("where pid = ?", self.params.pid))
+    self.files = assert_error(MFile:select(
+        "where pid = ?", self.params.pid,
+        { fields = {"fid", "fname", "fline"} }))
     
     return { render = true }
 end))
@@ -57,12 +94,18 @@ app:post("project", "/project/:pid", capture_errors(function(self)
         { "pid", exists = true, is_integer = true },
         { "uploadfile", exists = true, is_file = true },
     })
-    local file = self.params.uploadfile
-    assert_error(MFile:create({
+    local upfile = self.params.uploadfile
+    local file = assert_error(MFile:create({
         pid = self.params.pid,
-        fname = file.filename,
-        ftext = file.content
+        fname = upfile.filename,
+        ftext = upfile.content
     }))
+    
+    local count = analysisFile(file)
+    if count > 0 then
+        file.fline = count 
+        file:update("fline")
+    end
 
     return { redirect_to = self:url_for("project", self.params) }
 end))
