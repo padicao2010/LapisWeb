@@ -6,20 +6,24 @@
                     <hr />
                     <h3>共 <%= #files %> 个文件：</h3>
                     <table class="table">
-                        <tr>
-                            <th>文件</th>
-                            <th>行数</th>
-                            <th>操作</th>
-                        </tr>
-                        <% for _, f in ipairs(files) do %>
-                        <tr>
-                            <td><a href="<%= url_for('file', f) %>">
-                                <%= f.fname %>
-                            </a></td>
-                            <td><%= f.fline %></td>
-                            <td><a>下载</a></td>
-                        </tr>
-                        <% end %>
+                        <thead>
+                            <tr>
+                                <th>文件</th>
+                                <th>行数</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% for _, f in ipairs(files) do %>
+                            <tr>
+                                <td><a href="<%= url_for('file', f) %>">
+                                    <%= f.fname %>
+                                </a></td>
+                                <td><%= f.fline %></td>
+                                <td><a>下载</a></td>
+                            </tr>
+                            <% end %>
+                        </tbody>
                     </table>
                     <hr />
                     <h3>上传文件</h3>

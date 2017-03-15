@@ -2,8 +2,11 @@ local lapis = require("lapis")
 local app_helpers = require("lapis.application")
 local validate = require("lapis.validate")
 
+local PER_PAGE = 10
+
 local capture_errors, yield_error = app_helpers.capture_errors, app_helpers.yield_error
 local assert_error = app_helpers.assert_error
+local respond_to = app_helpers.respond_to
 
 local Model = require("lapis.db.model").Model
 local MProject = Model:extend("tr_project", {
@@ -118,18 +121,32 @@ app:get("file", "/file/:pid/:fid(/:pageid)", capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
         { "fid", exists = true, is_integer = true },
-        { "pageid", is_integer = true },
     })
     
     self.project = assert_error(MProject:find(self.params.pid))
     self.file = assert_error(MFile:find(self.params.fid))
-    local paginated = MLine:paginated("where fid = ? order by lid", self.file.fid, { per_page = 10 })
-    self.pageIndex = self.params.pageid or 1
+    local paginated = MLine:paginated("where fid = ? order by lid asc", self.file.fid, { per_page = PER_PAGE })
+    self.pageIndex = tonumber(self.params.pageid) or 1
     self.lines = paginated:get_page(self.pageIndex)
-    self.pageCount = paginated:num_pages()
+    self.pageCount = math.ceil(self.file.fline / PER_PAGE)
     -- self.lineCount = paginated:total_items()
     
     return { render = true }
+end))
+
+app:post("update", "/update/:pid/:fid/:pageid", capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "pid", exists = true, is_integer = true },
+        { "fid", exists = true, is_integer = true },
+        { "pageid", exists = true, is_integer = true },
+    })
+    
+    local t = {
+        pid = self.params.pid,
+        fid = self.params.fid,
+        pageid = self.params.pageid + 1
+    }
+    return { redirect_to = self:url_for("file", t) }
 end))
 
 return app
