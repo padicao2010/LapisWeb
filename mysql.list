@@ -16,9 +16,15 @@ CREATE TABLE tr_file(
   pid INT NOT NULL,
   fline INT default 0,
   fname VARCHAR(24) NOT NULL,
-  ftext LONGTEXT NOT NULL,
   PRIMARY KEY(fid),
   FOREIGN KEY(pid) REFERENCES tr_project(pid)
+);
+
+CREATE TABLE tr_filetext(
+  fid INT NOT NULL,
+  ftext LONGTEXT NOT NULL,
+  PRIMARY KEY(fid),
+  FOREIGN KEY(fid) REFERENCES tr_file(fid)
 );
 
 CREATE TABLE tr_line(

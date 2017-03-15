@@ -7,7 +7,7 @@
                     <% for _, l in ipairs(lines) do %>
                     <div class="list-group">
                         <p class="list-group-item"><%= l.orgstr %></p>
-                        <p class="list-group-item">共 <%= l.trstr %> 行</p>
+                        <p class="list-group-item"><%= l.trstr %></p>
                     </div>
                     <% end %>
                 </div>

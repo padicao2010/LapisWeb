@@ -12,6 +12,9 @@ local MProject = Model:extend("tr_project", {
 local MFile = Model:extend("tr_file", {
     primary_key = "fid"
 })
+local MFileText = Model:extend("tr_filetext", {
+    primary_key = "fid"
+})
 local MLine = Model:extend("tr_line", {
     primary_key = { "fid", "lid" }
 })
@@ -19,19 +22,19 @@ local MLog = Model:extend("tr_log", {
     primary_key = { "logid" }
 })
 
-local function analysisFile(file)
+local function analysisFile(file, content)
     local offset = 1
     local line = 1
     local orig
     local count = 0
     
     while true do
-        local eols, eole = string.find(file.ftext, "\r?\n", offset)
-        local l = string.sub(file.ftext, offset, eols and eols - 1)
+        local eols, eole = string.find(content, "\r?\n", offset)
+        local l = string.sub(content, offset, eols and eols - 1)
         local s = string.match(l, "\"(.*)\"")
         if s then
             if not orig then
-                orig = string.gsub(s, "^(%s+)", "")
+                orig = string.gsub(l, "^(%s+)", "")
             else
                 assert_error(MLine:create({
                     lid = line,
@@ -83,8 +86,7 @@ app:get("project", "/project/:pid", capture_errors(function(self)
     })
     self.project = assert_error(MProject:find(self.params.pid))
     self.files = assert_error(MFile:select(
-        "where pid = ?", self.params.pid,
-        { fields = "pid, fid, fname, fline"} ))
+        "where pid = ?", self.params.pid))
     
     return { render = true }
 end))
@@ -97,11 +99,13 @@ app:post("project", "/project/:pid", capture_errors(function(self)
     local upfile = self.params.uploadfile
     local file = assert_error(MFile:create({
         pid = self.params.pid,
-        fname = upfile.filename,
+        fname = upfile.filename}))
+    assert_error(MFileText:create({
+        fid = file.fid,
         ftext = upfile.content
     }))
     
-    local count = analysisFile(file)
+    local count = analysisFile(file, upfile.content)
     if count > 0 then
         file.fline = count 
         file:update("fline")
@@ -116,10 +120,10 @@ app:get("file", "/file/:pid/:fid", capture_errors(function(self)
         { "fid", exists = true, is_integer = true },
     })
     
-    local file = assert_error(MFile:find(self.params.fid))
-    local lines = assert_error(MLine:select("where fid = ?", file.fid))
+    self.file = assert_error(MFile:find(self.params.fid))
+    self.lines = assert_error(MLine:select("where fid = ?", self.file.fid))
     
     return { render = true }
-}
+end))
 
 return app
