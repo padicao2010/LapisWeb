@@ -10,12 +10,11 @@
                         <%= file.fname %>
                     </h3>
                     <p>共 <%= file.fline %> 行，共 <%= pageCount %> 页，第 <%= pageIndex %> 页</p>
-                    <hr />
                     <form action="<%= url_for("update", { pid=file.pid,fid=file.fid,pageid=pageIndex }) %>" method='post'>
-                        <table class="table table-responsive">
+                        <table class="table">
                             <thead>
                                 <tr>
-                                    <th>行号</th>
+                                    <th style="min-width: 48px;">行号</th>
                                     <th>内容</th>
                                 </tr>
                             </thead>
