@@ -10,7 +10,7 @@
                         </a>
                     </h3>
                     <p><%= project.pdesc %></p>
-                    <p>共 <%= project.pfile %> 个文件, 共 <%= pageCount %> 页，第 <%= pageIndex %> 页：
+                    <p>共 <%= project.pfile %> 个文件, 共 <%= pageCount %> 页，第 <%= pageIndex %> 页
                     </p>
                     <div id="collapseupload" class="collapse">
                         <form class="form-inline" action="<%= url_for("project", project) %>" method="post" enctype="multipart/form-data" >
