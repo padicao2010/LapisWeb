@@ -70,10 +70,6 @@ app:get("index", "/", function(self)
     return { render = true }
 end)
 
-app:get("new", "/new", function(self)
-    return { render = "newproject" }
-end)
-
 app:post("new", "/new", capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "name", exists = true, min_length = 1, max_length = 22 },
