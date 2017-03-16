@@ -13,6 +13,7 @@
                             <a href="<%= url_for("project", p) %>">
                                 <%= p.pname %>
                             </a>
+                            共 <%= p.pfile %> 个文件
                         </h4>
                         <p class="list-group-item"><%= p.pdesc %></p>
                     </div>

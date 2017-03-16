@@ -86,23 +86,27 @@ app:post("new", "/new", capture_errors(function(self)
     return { redirect_to = self:url_for("index") }
 end))
 
-app:get("project", "/project/:pid", capture_errors(function(self)
+app:get("project", "/project/:pid(/:pageid)", capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
     })
     self.project = assert_error(MProject:find(self.params.pid))
-    self.files = assert_error(MFile:select(
-        "where pid = ?", self.params.pid))
+        
+    local paginated = MFile:paginated("where pid = ? order by fid asc", self.project.pid, { per_page = PER_PAGE })
+    self.pageIndex = tonumber(self.params.pageid) or 1
+    self.files = paginated:get_page(self.pageIndex)
+    self.pageCount = math.ceil(self.project.pfile / PER_PAGE)
     
     return { render = true }
 end))
 
-app:post("project", "/project/:pid", capture_errors(function(self)
+app:post("project", "/project/:pid(/:pageid)", capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
         { "uploadfile", exists = true, is_file = true },
     })
     local upfile = self.params.uploadfile
+    local project = assert_error(MProject:find(self.params.pid))
     local file = assert_error(MFile:create({
         pid = self.params.pid,
         fname = upfile.filename}))
@@ -110,6 +114,8 @@ app:post("project", "/project/:pid", capture_errors(function(self)
         fid = file.fid,
         ftext = upfile.content
     }))
+    project.pfile = project.pfile + 1
+    assert_error(project:update("pfile"))
     
     local count = analysisFile(file, upfile.content)
     if count > 0 then
