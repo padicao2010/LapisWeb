@@ -4,14 +4,14 @@
                     <h3><a href="<%= url_for("index") %>">
                             <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
                         </a> /
-                        <%= project.pname %></h3>
-                    <p><%= project.pdesc %></p>
-                    <hr />
-                    <h3>共 <%= project.pfile %> 个文件, <%= pageCount %> 页，第 <%= pageIndex %> 页：
+                        <%= project.pname %>
                         <a class="btn btn-default" data-toggle="collapse" href="#collapseupload">
                             <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                         </a>
                     </h3>
+                    <p><%= project.pdesc %></p>
+                    <p>共 <%= project.pfile %> 个文件, 共 <%= pageCount %> 页，第 <%= pageIndex %> 页：
+                    </p>
                     <div id="collapseupload" class="collapse">
                         <form class="form-inline" action="<%= url_for("project", project) %>" method="post" enctype="multipart/form-data" >
                             <input class="form-control" type="file" name="uploadfile">
