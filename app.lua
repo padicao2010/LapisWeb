@@ -65,6 +65,10 @@ local app = lapis.Application()
 app:enable("etlua")
 app.layout = require "views.layout"
 
+app.handle_error = function(self, err, trace)
+    return { render = "error" }
+end
+
 app:get("index", "/", function(self)
     self.projects = MProject:select()
     return { render = true }
