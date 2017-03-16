@@ -66,7 +66,7 @@ app:enable("etlua")
 app.layout = require "views.layout"
 
 app.handle_error = function(self, err, trace)
-    return { render = "error" }
+    return { render = "error", status = 404 }
 end
 
 app:get("index", "/", function(self)
