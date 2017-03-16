@@ -1,6 +1,6 @@
 CREATE USER 'yvanhom'@'localhost' IDENTIFIED BY '1234';
 
-CREATE DATABASE trpy;
+CREATE DATABASE IF NOT EXISTS trpy DEFAULT CHARSET utf8 COLLATE utf8_general_ci;
 
 GRANT all privileges ON trpy.* TO 'yvanhom'@'localhost' IDENTIFIED BY '1234';
 
@@ -8,6 +8,7 @@ CREATE TABLE tr_project(
   pid INT NOT NULL AUTO_INCREMENT,
   pname VARCHAR(24) NOT NULL,
   pdesc VARCHAR(256) NOT NULL,
+  pfile INT DEFAULT 0,
   PRIMARY KEY(pid)
 );
 
