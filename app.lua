@@ -1,7 +1,10 @@
 local lapis = require("lapis")
 local app_helpers = require("lapis.application")
 local validate = require("lapis.validate")
+local encoding = require("lapis.util.encoding")
 local lfs = require("lfs")
+
+local config = require("lapis.config").get()
 
 local PER_PAGE = 10
 
@@ -86,12 +89,43 @@ app.handle_error = function(self, err, trace)
     return { render = "error", status = 404 }
 end
 
+app.before_filter = function(self)
+    local id = self.session.user_id
+    if not id and self.cookies.trpy_state then
+        local u = encode.encode_with_secret(self.cookies.trpy_state)
+        if u.id and u.ts and os.time() - u.ts < 30 * 24 * 3600 then
+            id = u.id
+            self.session.user_id = id
+        end
+    end
+        
+    if id then
+        self.current_user = MUser:find(id)
+    end
+end
+
 app:get("index", "/", function(self)
     self.projects = MProject:select()
     return { render = true }
 end)
 
+local function doLogin(req, user)
+    req.session.user_id = user.uid
+    self.cookies.trpy_state = encode.encode_with_secret( {
+        id = user.uid, name = user.uname, ts = os.time() 
+    })
+end
+
+local function doLogout(req, user)
+    req.session.user_id = nil
+    self.cookies.trpy_state = nil
+end
+
 app:get("register", "/register", function(self)
+    if self.current_user then
+        return { redirect_to = self:url_for("index") }
+    end
+    
     self.reg = true
     return { render = "user" }
 end)
@@ -104,16 +138,19 @@ app:post("register", "/register", capture_errors(function(self)
     
     local user = assert_error(MUser:create({
         uname = self.params.username,
-        upasswd = self.params.password
+        upasswd = encode.encode_base64(encode.hmac_sha1(config.secret, self.params.password))
     }))
     
-    self.session.user_id = user.uid
-    self.session.user_name = user.uname
+    doLogin(self, user)
     
     return { redirect_to = self:url_for("index") }
 end))
 
 app:get("login", "/login", function(self)
+    if self.current_user then
+        return { redirect_to = self:url_for("index") }
+    end
+    
     return { render = "user" }
 end)
 
@@ -125,14 +162,21 @@ app:post("login", "/login", capture_errors(function(self)
     
     local user = assert_error(MUser:find({
         uname = self.username,
-        upasswd = self.password,
+        upasswd = encode.encode_base64(encode.hmac_sha1(config.secret, self.params.password)),
     }))
     
-    self.session.user_id = user.uid
-    self.session.user_name = user.uname
+    doLogin(self, user)
     
     return { redirect_to = self:url_for("index") }
 end))
+
+app:get("logout", "/logout", function(self)
+    if current_user then
+        doLogout(self, current_user)
+    end
+    
+    return { redirect_to = self:url_for("index") }
+end)
 
 app:post("new", "/new", capture_errors(function(self)
     validate.assert_valid(self.params, {
