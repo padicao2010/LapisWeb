@@ -4,6 +4,7 @@ local validate = require("lapis.validate")
 local encoding = require("lapis.util.encoding")
 local lfs = require("lfs")
 local date = require("date")
+local db = require("lapis.db")
 
 local config = require("lapis.config").get()
 
@@ -352,6 +353,21 @@ app:get("merge", "/merge/p:pid/f:fid", capture_errors(function(self)
     output:close()
     
     return { redirect_to = "/" .. outp }
+end))
+
+app:get("log", "/log/f:fid/l:lid", capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "fid", exists = true, is_integer = true },
+        { "lid", exists = true, is_integer = true },
+    })
+    
+    self.file = assert_error(MFile:find(self.params.fid))
+    self.project = assert_error(MProject:find(self.file.pid))
+    self.line = assert_error(MFile:find(self.params.lid))
+    
+    self.logs = assert_error(db.select("l.bfstr, l.utime, u.uname FROM tr_log l, tr_user u WHERE l.fid = ? AND l.lid = ? AND l.uid = u.uid ORDER BY l.utime ASC", self.line.fid, self.line.lid))
+        
+    return { render = true }
 end))
 
 return app

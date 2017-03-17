@@ -29,7 +29,13 @@
                                 <tr>
                                     <td>
                                         <p><%= l.lid %></p>
+                                        <% if l.nupd >= 2 then %>
+                                        <p><a href="<%= url_for("log", l) %>">
+                                            <%= l.nupd %>次
+                                        </a></p>
+                                        <% else %>
                                         <p class="text-danger"><%= l.nupd %>次</p>
+                                        <% end %>
                                     </td>
                                     <td>
                                         <p><%= l.ldesc %></p>

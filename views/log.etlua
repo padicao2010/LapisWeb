@@ -1,0 +1,27 @@
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+                    <h3><a href="<%= url_for("index") %>">
+                            <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
+                        </a> /
+                        <a href="<%= url_for("project", project) %>">
+                            <%= project.pname %>
+                        </a> /
+                        <a href="<%= url_for("file", file) %>">
+                            <%= file.fname %>
+                        </a> /
+                        第 <%= line.lid %> 行
+                    </h3>
+                    <p>共修改 <mark><%= line.nupd %> 次</p>
+                </div>
+                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+                    <p>原文：</p>
+                    <pre style="word-break: normal;"><%= line.orgstr %></pre>
+                    <% for _, lg in ipairs(logs) do %>
+                    <p> <%= lg.uname %> 于 <%= log.utime %> 提交 </p>
+                    <pre style="word-break: normal;"><%= lg.bfstr %></pre>
+                    <% end %>
+                </div>
+            </div>
+        </div>
+
