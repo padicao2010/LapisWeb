@@ -100,7 +100,7 @@ app:post("new", "/new", capture_errors(function(self)
     return { redirect_to = self:url_for("index") }
 end))
 
-app:get("project", "/project/:pid(/:pageid)", capture_errors(function(self)
+app:get("project", "/project/p:pid(/page:pageid)", capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
     })
@@ -114,7 +114,7 @@ app:get("project", "/project/:pid(/:pageid)", capture_errors(function(self)
     return { render = true }
 end))
 
-app:post("project", "/project/:pid(/:pageid)", capture_errors(function(self)
+app:post("project", "/project/p:pid(/page:pageid)", capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
         { "desc", max_length = 254 },
@@ -147,7 +147,7 @@ app:post("project", "/project/:pid(/:pageid)", capture_errors(function(self)
     return { redirect_to = self:url_for("project", self.params) }
 end))
 
-app:get("file", "/file/:pid/:fid(/:pageid)", capture_errors(function(self)
+app:get("file", "/file/p:pid/f:fid(/page:pageid)", capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
         { "fid", exists = true, is_integer = true },
@@ -164,7 +164,7 @@ app:get("file", "/file/:pid/:fid(/:pageid)", capture_errors(function(self)
     return { render = true }
 end))
 
-app:post("update", "/update/:pid/:fid/:pageid", capture_errors(function(self)
+app:post("update", "/update/p:pid/f:fid/page:pageid", capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
         { "fid", exists = true, is_integer = true },
@@ -217,7 +217,7 @@ app:post("update", "/update/:pid/:fid/:pageid", capture_errors(function(self)
     return { redirect_to = self:url_for("file", t) }
 end))
 
-app:get("merge", "/merge/:pid/:fid", capture_errors(function(self)
+app:get("merge", "/merge/p:pid/f:fid", capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
         { "fid", exists = true, is_integer = true },
