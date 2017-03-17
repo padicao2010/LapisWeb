@@ -10,7 +10,12 @@
                         <%= file.fname %>
                     </h3>
                     <p><%= file.fdesc %></p>
-                    <p>共 <%= file.fline %> 行，共 <%= pageCount %> 页，第 <%= pageIndex %> 页</p>
+                    <p>
+                        共 <mark><%= file.fline %></mark> 行，
+                        已翻译 <mark><%= file.ntred %></mark>行，
+                        共 <mark><%= pageCount %></mark> 页，
+                        第 <mark><%= pageIndex %></mark> 页
+                    </p>
                     <form action="<%= url_for("update", { pid=file.pid,fid=file.fid,pageid=pageIndex }) %>" method='post'>
                         <table class="table">
                             <thead>
@@ -22,7 +27,10 @@
                             <tbody>
                                 <% for _, l in ipairs(lines) do %>
                                 <tr>
-                                    <td><%= l.lid %></td>
+                                    <td>
+                                        <p><%= l.lid %></p>
+                                        <p class="text-danger"><%= l.nupd %>次</p>
+                                    </td>
                                     <td>
                                         <p><%= l.ldesc %></p>
                                         <pre style="word-break: normal;"><code class="python"><%= l.orgstr %></pre></code>

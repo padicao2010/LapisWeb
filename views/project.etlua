@@ -10,7 +10,12 @@
                         </a>
                     </h3>
                     <p><%= project.pdesc %></p>
-                    <p>共 <%= project.pfile %> 个文件, 共 <%= pageCount %> 页，第 <%= pageIndex %> 页
+                    <p>
+                        共 <mark><%= project.pfile %></mark> 个文件，
+                        共 <mark><%= project.pline %></mark> 行，
+                        已翻译 <mark><%= project.ntred %></mark> 行，
+                        共 <mark><%= pageCount %></mark> 页，
+                        第 <mark><%= pageIndex %></mark> 页
                     </p>
                     <div id="collapseupload" class="collapse">
                         <form action="<%= url_for("project", project) %>" method="post" enctype="multipart/form-data" >
@@ -33,7 +38,9 @@
                             </div>
                         </form>
                     </div>
+                </div>
                     
+                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
                     <% for _, f in ipairs(files) do %>
                     <div class="list-group">
                         <h4 class="list-group-item">
