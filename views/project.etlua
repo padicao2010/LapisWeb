@@ -37,6 +37,7 @@
                         <thead>
                             <tr>
                                 <th>文件</th>
+                                <th>描述</th>
                                 <th>行数</th>
                                 <th>操作</th>
                             </tr>
@@ -47,6 +48,9 @@
                                 <td><a href="<%= url_for('file', f) %>">
                                     <%= f.fname %>
                                 </a></td>
+                                <td>
+                                    <%= #(f.fdesc)<20 and f.fdesc or (string.sub(f.fdesc, 1, 18) .. "...") %>
+                                </td>
                                 <td><%= f.fline %></td>
                                 <td><a href="<%= url_for('merge', f) %>" target="_blank">下载</a></td>
                             </tr>
