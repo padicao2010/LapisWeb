@@ -44,20 +44,22 @@ CREATE TABLE tr_line(
   FOREIGN KEY(fid) REFERENCES tr_file(fid)
 );
 
-CREATE TABLE tr_log(
-  logid INT NOT NULL AUTO_INCREMENT,
-  fid INT NOT NULL,
-  lid INT NOT NULL,
-  bfstr TEXT NOT NULL,
-  utime TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
-  PRIMARY KEY(logid),
-  FOREIGN KEY(fid, lid) REFERENCES tr_line(fid, lid)
-);
-
 CREATE TABLE tr_user(
   uid INT NOT NULL AUTO_INCREMENT,
   uname VARCHAR(48) NOT NULL,
   upasswd VARCHAR(48) NOT NULL,
   PRIMARY KEY(uid),
   UNIQUE(uname)
+);
+
+CREATE TABLE tr_log(
+  logid INT NOT NULL AUTO_INCREMENT,
+  fid INT NOT NULL,
+  lid INT NOT NULL,
+  uid INT NOT NULL,
+  bfstr TEXT NOT NULL,
+  utime TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+  PRIMARY KEY(logid),
+  FOREIGN KEY(fid, lid) REFERENCES tr_line(fid, lid),
+  FOREIGN KEY(uid) REFERENCES tr_user(uid)
 );

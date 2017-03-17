@@ -284,6 +284,7 @@ app:post("file", "/file/p:pid/f:fid(/page:pageid)", capture_errors(function(self
                 assert_error(MLog:create({
                     fid = fid,
                     lid = lid,
+                    uid = self.current_user.uid,
                     bfstr = v
                 }))
                 line.nupd = line.nupd + 1
