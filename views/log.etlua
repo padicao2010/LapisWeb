@@ -12,16 +12,21 @@
                         </a> /
                         第 <%= line.lid %> 行
                     </h3>
-                    <p>共修改 <mark><%= line.nupd %> 次</p>
+                    <p>共修改 <mark><%= line.nupd %></mark> 次</p>
                 </div>
                 <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
-                    <p>原文：</p>
-                    <pre style="word-break: normal;"><%= line.orgstr %></pre>
+                    <div class="list-group">
+                        <h4 class="list-group-item">来源</h4>
+                        <pre  class="list-group-item" style="word-break: normal;"><code class="python"><%= line.orgstr %></code></pre>
+                    </div>
                     <% for _, lg in ipairs(logs) do %>
-                    <p> <%= lg.uname %> 于 <%= log.utime %> 提交 </p>
-                    <pre style="word-break: normal;"><%= lg.bfstr %></pre>
+                    <div class="list-group">
+                        <h4 class="list-group-item"><mark><%= lg.uname %></mark> 于 <mark><%= lg.utime %></mark> 提交：</h4>
+                        <pre  class="list-group-item" style="word-break: normal;"><%= lg.bfstr %></pre>
+                    </div>
                     <% end %>
                 </div>
             </div>
         </div>
-
+        <script src="/static/js/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script>

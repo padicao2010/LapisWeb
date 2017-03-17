@@ -363,7 +363,7 @@ app:get("log", "/log/f:fid/l:lid", capture_errors(function(self)
     
     self.file = assert_error(MFile:find(self.params.fid))
     self.project = assert_error(MProject:find(self.file.pid))
-    self.line = assert_error(MFile:find(self.params.lid))
+    self.line = assert_error(MLine:find(self.file.fid, self.params.lid))
     
     self.logs = assert_error(db.select("l.bfstr, l.utime, u.uname FROM tr_log l, tr_user u WHERE l.fid = ? AND l.lid = ? AND l.uid = u.uid ORDER BY l.utime ASC", self.line.fid, self.line.lid))
         
