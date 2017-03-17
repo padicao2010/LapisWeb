@@ -25,6 +25,9 @@ local MLine = Model:extend("tr_line", {
 local MLog = Model:extend("tr_log", {
     primary_key = { "logid" }
 })
+local MUser = Model:extend("tr_user", {
+    primary_key = "uid"
+})
 
 local function analysisFile(file, content)
     local offset = 1
@@ -93,9 +96,43 @@ app:get("register", "/register", function(self)
     return { render = "user" }
 end)
 
+app:post("register", "/register", capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "username", exists = true },
+        { "password", exists = true }
+    })
+    
+    local user = assert_error(MUser:create({
+        uname = self.params.username,
+        upasswd = self.params.password
+    }))
+    
+    self.session.user_id = user.uid
+    self.session.user_name = user.uname
+    
+    return { redirect_to = self:url_for("index") }
+end))
+
 app:get("login", "/login", function(self)
     return { render = "user" }
 end)
+
+app:post("login", "/login", capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "username", exists = true },
+        { "password", exists = true }
+    })
+    
+    local user = assert_error(MUser:find({
+        uname = self.username,
+        upasswd = self.password,
+    }))
+    
+    self.session.user_id = user.uid
+    self.session.user_name = user.uname
+    
+    return { redirect_to = self:url_for("index") }
+end))
 
 app:post("new", "/new", capture_errors(function(self)
     validate.assert_valid(self.params, {
