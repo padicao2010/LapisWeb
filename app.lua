@@ -88,6 +88,15 @@ app:get("index", "/", function(self)
     return { render = true }
 end)
 
+app:get("register", "/register", function(self)
+    self.reg = true
+    return { render = "user" }
+end)
+
+app:get("login", "/login", function(self)
+    return { render = "user" }
+end)
+
 app:post("new", "/new", capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "name", exists = true, min_length = 1, max_length = 44 },

@@ -53,3 +53,11 @@ CREATE TABLE tr_log(
   PRIMARY KEY(logid),
   FOREIGN KEY(fid, lid) REFERENCES tr_line(fid, lid)
 );
+
+CREATE TABLE tr_user(
+  uid INT NOT NULL AUTO_INCREMENT,
+  uname VARCHAR(48) NOT NULL,
+  upasswd VARCHAR(48) NOT NULL,
+  PRIMARY KEY(uid),
+  UNIQUE(uname)
+);
