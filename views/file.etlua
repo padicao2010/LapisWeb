@@ -43,7 +43,7 @@
                                         <% if current_user then %>
                                         <textarea class="form-control" name="line<%= l.lid %>" rows="3"><%= l.trstr %></textarea>
                                         <% else %>
-                                        <pre style="word-break: normal;"><%= l.trstr %></pre>
+                                        <pre style="word-break: normal;"><code class="python"><%= l.trstr %></code></pre>
                                         <% end %>
                                     </td>
                                 </tr>
