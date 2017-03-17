@@ -182,6 +182,8 @@ app:post("new", "/new", capture_errors(function(self)
         { "desc", exists = true, min_length = 1, max_length = 254 },
     })
     
+    assert_error(self.current_user and self.current_user.id == 0, "创建新项目必须管理员权限！")
+    
     local project = assert_error(MProject:create({ pname = self.params.name, pdesc = self.params.desc }))
     
     lfs.mkdir("download/" .. project.pid)
@@ -208,6 +210,9 @@ app:post("project", "/project/p:pid(/page:pageid)", capture_errors(function(self
         { "desc", max_length = 254 },
         { "uploadfile", exists = true, is_file = true },
     })
+    
+    assert_error(self.current_user and self.current_user.id == 0, "上传文件必须管理员权限！")
+    
     local upfile = self.params.uploadfile
     local project = assert_error(MProject:find(self.params.pid))
     local file = assert_error(MFile:create({
@@ -260,6 +265,8 @@ app:post("file", "/file/p:pid/f:fid(/page:pageid)", capture_errors(function(self
         { "fid", exists = true, is_integer = true },
         { "pageid", exists = true, is_integer = true },
     })
+    
+    assert_error(self.current_user, "翻译修改必须登录！")
     
     local pid = self.params.pid
     local fid = self.params.fid
