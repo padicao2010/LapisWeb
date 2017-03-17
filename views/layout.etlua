@@ -23,8 +23,16 @@
                 <div class="collapse navbar-collapse bs-navbar-collapse-1">
                     <ul class="nav navbar-nav navbar-right">
                         <% if current_user then %>
-                        <li><span class="glyphicon glyphicon-user"></span> <%= current_user.uname %></li>
-                        <li><a href="<%= url_for('logout') %>">退出</a></li>
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" 
+                                data-toggle="dropdown" role="button" 
+                                aria-haspopup="true" aria-expanded="false">
+                                <span class="glyphicon glyphicon-user"></span> <%= current_user.uname %> <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a href="<%= url_for('logout') %>">退出</a></li>
+                            </ul>
+                        </li>
                         <% else %>
                         <li><a href="<%= url_for('register') %>">注册</a></li>
                         <li><a href="<%= url_for('login') %>">登录</a></li>

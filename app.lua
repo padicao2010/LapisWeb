@@ -3,6 +3,7 @@ local app_helpers = require("lapis.application")
 local validate = require("lapis.validate")
 local encoding = require("lapis.util.encoding")
 local lfs = require("lfs")
+local date = require("date")
 
 local config = require("lapis.config").get()
 
@@ -89,19 +90,20 @@ app.handle_error = function(self, err, trace)
     return { render = "error", status = 404 }
 end
 
-app.before_filter = function(self)
+app:before_filter(function(self)
     local id = self.session.user_id
-    if not id and self.cookies.trpy_state then
-        local u = encode.encode_with_secret(self.cookies.trpy_state)
-        if u.id and u.ts and os.time() - u.ts < 30 * 24 * 3600 then
-            id = u.id
-            self.session.user_id = id
-        end
-    end
         
     if id then
         self.current_user = MUser:find(id)
+        if self.current_user and id == 0 then
+            self.admin_state = true
+        end
     end
+end)
+
+app.cookie_attributes = function(self)
+  local expires = date(true):adddays(30):fmt("${http}")
+  return "Expires=" .. expires .. "; Path=/; HttpOnly"
 end
 
 app:get("index", "/", function(self)
@@ -111,14 +113,10 @@ end)
 
 local function doLogin(req, user)
     req.session.user_id = user.uid
-    self.cookies.trpy_state = encode.encode_with_secret( {
-        id = user.uid, name = user.uname, ts = os.time() 
-    })
 end
 
 local function doLogout(req, user)
     req.session.user_id = nil
-    self.cookies.trpy_state = nil
 end
 
 app:get("register", "/register", function(self)
@@ -138,7 +136,7 @@ app:post("register", "/register", capture_errors(function(self)
     
     local user = assert_error(MUser:create({
         uname = self.params.username,
-        upasswd = encode.encode_base64(encode.hmac_sha1(config.secret, self.params.password))
+        upasswd = encoding.encode_base64(encoding.hmac_sha1(config.secret, self.params.password))
     }))
     
     doLogin(self, user)
@@ -162,7 +160,7 @@ app:post("login", "/login", capture_errors(function(self)
     
     local user = assert_error(MUser:find({
         uname = self.username,
-        upasswd = encode.encode_base64(encode.hmac_sha1(config.secret, self.params.password)),
+        upasswd = encoding.encode_base64(encoding.hmac_sha1(config.secret, self.params.password)),
     }))
     
     doLogin(self, user)
@@ -171,8 +169,8 @@ app:post("login", "/login", capture_errors(function(self)
 end))
 
 app:get("logout", "/logout", function(self)
-    if current_user then
-        doLogout(self, current_user)
+    if self.current_user then
+        doLogout(self, self.current_user)
     end
     
     return { redirect_to = self:url_for("index") }
