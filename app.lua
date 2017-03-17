@@ -168,12 +168,14 @@ app:get("file", "/file/p:pid/f:fid(/page:pageid)", capture_errors(function(self)
     self.pageIndex = tonumber(self.params.pageid) or 1
     self.lines = paginated:get_page(self.pageIndex)
     self.pageCount = math.ceil(self.file.fline / PER_PAGE)
-    -- self.lineCount = paginated:total_items()
-    
-    return { render = true }
+    if self.pageIndex <= 0 or self.pageIndex > self.pageCount then
+        return { redirect_to = self:url_for("file", self.file) }
+    else
+        return { render = true }
+    end
 end))
 
-app:post("update", "/update/p:pid/f:fid/page:pageid", capture_errors(function(self)
+app:post("file", "/file/p:pid/f:fid(/page:pageid)", capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
         { "fid", exists = true, is_integer = true },
@@ -182,7 +184,7 @@ app:post("update", "/update/p:pid/f:fid/page:pageid", capture_errors(function(se
     
     local pid = self.params.pid
     local fid = self.params.fid
-    local pageid = self.params.pageid
+    local pageid = tonumber(self.params.pageid) or 1
     
     local ntred = 0
     
@@ -221,7 +223,7 @@ app:post("update", "/update/p:pid/f:fid/page:pageid", capture_errors(function(se
     local t = {
         pid = pid,
         fid = fid,
-        pageid = (tonumber(pageid) or 0) + 1
+        pageid = pageid + 1
     }
     return { redirect_to = self:url_for("file", t) }
 end))

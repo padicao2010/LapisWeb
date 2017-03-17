@@ -16,7 +16,7 @@
                         共 <mark><%= pageCount %></mark> 页，
                         第 <mark><%= pageIndex %></mark> 页
                     </p>
-                    <form action="<%= url_for("update", { pid=file.pid,fid=file.fid,pageid=pageIndex }) %>" method='post'>
+                    <form method='post'>
                         <table class="table">
                             <thead>
                                 <tr>

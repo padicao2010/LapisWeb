@@ -18,7 +18,7 @@
                         第 <mark><%= pageIndex %></mark> 页
                     </p>
                     <div id="collapseupload" class="collapse">
-                        <form action="<%= url_for("project", project) %>" method="post" enctype="multipart/form-data" >
+                        <form method="post" enctype="multipart/form-data" >
                             <div class="form-group">
                                 <label class="col-sm-2 control-label" for="fileUpload">选择文件</label>
                                 <div class="col-sm-10">
