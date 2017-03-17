@@ -7,7 +7,7 @@ GRANT all privileges ON trpy.* TO 'yvanhom'@'localhost' IDENTIFIED BY '1234';
 CREATE TABLE tr_project(
   pid INT NOT NULL AUTO_INCREMENT,
   pname VARCHAR(48) NOT NULL,
-  pdesc VARCHAR(256) NOT NULL,
+  pdesc VARCHAR(256) default "",
   pfile INT DEFAULT 0,
   PRIMARY KEY(pid)
 );
@@ -17,6 +17,7 @@ CREATE TABLE tr_file(
   pid INT NOT NULL,
   fline INT default 0,
   fname VARCHAR(48) NOT NULL,
+  fdesc VARCHAR(256) default "",
   PRIMARY KEY(fid),
   FOREIGN KEY(pid) REFERENCES tr_project(pid)
 );
@@ -32,6 +33,7 @@ CREATE TABLE tr_line(
   lid INT NOT NULL,
   fid INT NOT NULL,
   pos INT NOT NULL,
+  ldesc VARCHAR(256) default "",
   orgstr TEXT NOT NULL,
   trstr TEXT,
   PRIMARY KEY(fid, lid),

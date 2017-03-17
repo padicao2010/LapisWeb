@@ -9,6 +9,7 @@
                         </a> /
                         <%= file.fname %>
                     </h3>
+                    <p><%= file.fdesc %></p>
                     <p>共 <%= file.fline %> 行，共 <%= pageCount %> 页，第 <%= pageIndex %> 页</p>
                     <form action="<%= url_for("update", { pid=file.pid,fid=file.fid,pageid=pageIndex }) %>" method='post'>
                         <table class="table">
@@ -22,7 +23,9 @@
                                 <% for _, l in ipairs(lines) do %>
                                 <tr>
                                     <td><%= l.lid %></td>
-                                    <td><pre style="word-break: normal;"><code class="python"><%= l.orgstr %></pre></code>
+                                    <td>
+                                        <p><%= l.ldesc %></p>
+                                        <pre style="word-break: normal;"><code class="python"><%= l.orgstr %></pre></code>
                                         <textarea class="form-control" name="line<%= l.lid %>" rows="3"><%= l.trstr %></textarea>
                                     </td>
                                 </tr>
