@@ -58,7 +58,7 @@ local function analysisFile(file, content)
             end
         end
         if l ~= "" then
-            lastline = l
+            lastline = #l < 254 and l or (string.sub(l, 1, 16) .. "...")
         end
         if not eols then
             break
