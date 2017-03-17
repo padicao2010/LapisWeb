@@ -57,7 +57,9 @@ local function analysisFile(file, content)
                 desc = nil
             end
         end
-        lastline = l
+        if l ~= "" then
+            lastline = l
+        end
         if not eols then
             break
         else
