@@ -34,7 +34,11 @@
                             <a href="<%= url_for("project", p) %>">
                                 <%= p.pname %>
                             </a>
-                            共 <%= p.pfile %> 个文件
+                            <small>
+                                共 <mark><%= p.pfile %></mark> 个文件，
+                                共 <mark><%= p.pline %></mark> 行，
+                                已翻译 <mark><%= p.ntred %></mark> 行
+                            </small>
                         </h4>
                         <p class="list-group-item"><%= p.pdesc %></p>
                     </div>

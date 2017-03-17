@@ -31,6 +31,7 @@ local function analysisFile(file, content)
     local line = 1
     local orig
     local count = 0
+    local ntred = 0
     local lastline
     local desc
     
@@ -50,8 +51,12 @@ local function analysisFile(file, content)
                     pos = offset,
                     ldesc = desc or "",
                     orgstr = orig,
-                    trstr = s
+                    trstr = s,
+                    nupd = (s ~= "") and 1 or 0
                 }))
+                if s ~= "" then
+                    ntred = ntred + 1
+                end
                 count = count + 1
                 orig = nil
                 desc = nil
@@ -67,7 +72,7 @@ local function analysisFile(file, content)
             line = line + 1
         end
     end
-    return count
+    return count, ntred
 end
 
 local app = lapis.Application()
@@ -126,14 +131,18 @@ app:post("project", "/project/:pid(/:pageid)", capture_errors(function(self)
         fid = file.fid,
         ftext = upfile.content
     }))
-    project.pfile = project.pfile + 1
-    assert_error(project:update("pfile"))
-    
-    local count = analysisFile(file, upfile.content)
+
+    local count, ntred = analysisFile(file, upfile.content)
     if count > 0 then
-        file.fline = count 
-        file:update("fline")
+        file.fline = count
+        file.ntred = ntred 
+        assert(file:update("fline", "ntred"))
     end
+    
+    project.pfile = project.pfile + 1
+    project.pline = project.pline + count
+    project.ntred = project.ntred + ntred
+    assert_error(project:update("pfile", "pline", "ntred"))
 
     return { redirect_to = self:url_for("project", self.params) }
 end))
@@ -166,6 +175,8 @@ app:post("update", "/update/:pid/:fid/:pageid", capture_errors(function(self)
     local fid = self.params.fid
     local pageid = self.params.pageid
     
+    local ntred = 0
+    
     for k, v in pairs(self.params) do
         local lid = string.match(k, "line(%d+)")
         if lid then
@@ -178,11 +189,24 @@ app:post("update", "/update/:pid/:fid/:pageid", capture_errors(function(self)
                     lid = lid,
                     bfstr = v
                 }))
+                line.nupd = line.nupd + 1
+                if line.nupd == 1 then
+                    ntred = ntred + 1
+                end
                 
                 line.trstr = v
-                line:update("trstr")
+                line:update("nupd", "trstr")
             end
         end
+    end
+    
+    if ntred > 0 then
+        local file = assert_error(MFile:find(fid))
+        file.ntred = file.ntred + ntred
+        assert_error(file:update("ntred"))
+        local project = assert_error(MProject:find(pid))
+        project.ntred = project.ntred + ntred
+        assert_error(project:update("ntred"))
     end
     
     local t = {

@@ -33,30 +33,22 @@
                             </div>
                         </form>
                     </div>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>文件</th>
-                                <th>描述</th>
-                                <th>行数</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% for _, f in ipairs(files) do %>
-                            <tr>
-                                <td><a href="<%= url_for('file', f) %>">
-                                    <%= f.fname %>
-                                </a></td>
-                                <td>
-                                    <%= #(f.fdesc)<20 and f.fdesc or (string.sub(f.fdesc, 1, 18) .. "...") %>
-                                </td>
-                                <td><%= f.fline %></td>
-                                <td><a href="<%= url_for('merge', f) %>" target="_blank">下载</a></td>
-                            </tr>
-                            <% end %>
-                        </tbody>
-                    </table>
+                    
+                    <% for _, f in ipairs(files) do %>
+                    <div class="list-group">
+                        <h4 class="list-group-item">
+                            <a href="<%= url_for("file", f) %>">
+                                <%= f.fname %>
+                            </a>
+                            <small>
+                                共 <mark><%= f.fline %></mark> 行，
+                                已翻译 <mark><%= f.ntred %></mark> 行
+                            </small>
+                        </h4>
+                        <p class="list-group-item"><%= f.fdesc %></p>
+                    </div>
+                    <% end %>
+
                     <nav aria-label="...">
                       <ul class="pager">
                         <li class="<%= pageIndex<=1 and 'disabled' or '' %>"><a href="<%= pageIndex>1 and url_for('project', { pid=project.pid,pageid=pageIndex-1 }) or '#' %>">

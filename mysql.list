@@ -9,15 +9,18 @@ CREATE TABLE tr_project(
   pname VARCHAR(48) NOT NULL,
   pdesc VARCHAR(256) default "",
   pfile INT DEFAULT 0,
+  pline INT DEFAULT 0,
+  ntred INT DEFAULT 0,
   PRIMARY KEY(pid)
 );
 
 CREATE TABLE tr_file(
   fid INT NOT NULL AUTO_INCREMENT,
   pid INT NOT NULL,
-  fline INT default 0,
+  fline INT DEFAULT 0,
   fname VARCHAR(48) NOT NULL,
   fdesc VARCHAR(256) default "",
+  ntred INT DEFAULT 0,
   PRIMARY KEY(fid),
   FOREIGN KEY(pid) REFERENCES tr_project(pid)
 );
@@ -36,6 +39,7 @@ CREATE TABLE tr_line(
   ldesc VARCHAR(256) default "",
   orgstr TEXT NOT NULL,
   trstr TEXT,
+  nupd INT DEFAULT 0,
   PRIMARY KEY(fid, lid),
   FOREIGN KEY(fid) REFERENCES tr_file(fid)
 );
@@ -45,6 +49,7 @@ CREATE TABLE tr_log(
   fid INT NOT NULL,
   lid INT NOT NULL,
   bfstr TEXT NOT NULL,
+  utime TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
   PRIMARY KEY(logid),
   FOREIGN KEY(fid, lid) REFERENCES tr_line(fid, lid)
 );
