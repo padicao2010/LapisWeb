@@ -31,26 +31,33 @@ local function analysisFile(file, content)
     local line = 1
     local orig
     local count = 0
+    local lastline
+    local desc
     
     while true do
         local eols, eole = string.find(content, "\r?\n", offset)
         local l = string.sub(content, offset, eols and eols - 1)
+        l = string.gsub(l, "^(%s+)", "")
         local s = string.match(l, "\"(.*)\"")
         if s then
             if not orig then
-                orig = string.gsub(l, "^(%s+)", "")
+                desc = lastline
+                orig = l
             else
                 assert_error(MLine:create({
                     lid = line,
                     fid = file.fid,
                     pos = offset,
+                    ldesc = desc or "",
                     orgstr = orig,
                     trstr = s
                 }))
                 count = count + 1
                 orig = nil
+                desc = nil
             end
         end
+        lastline = l
         if not eols then
             break
         else
@@ -103,13 +110,16 @@ end))
 app:post("project", "/project/:pid(/:pageid)", capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
+        { "desc", max_length = 254 },
         { "uploadfile", exists = true, is_file = true },
     })
     local upfile = self.params.uploadfile
     local project = assert_error(MProject:find(self.params.pid))
     local file = assert_error(MFile:create({
         pid = self.params.pid,
-        fname = upfile.filename}))
+        fname = upfile.filename,
+        fdesc = self.params.desc,
+    }))
     assert_error(MFileText:create({
         fid = file.fid,
         ftext = upfile.content
