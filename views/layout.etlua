@@ -30,6 +30,10 @@
                                 <span class="glyphicon glyphicon-user"></span> <%= current_user.uname %> <span class="caret"></span>
                             </a>
                             <ul class="dropdown-menu">
+                                <% if session.last_update then %>
+                                <li><a href="<%= url_for('file', session.last_update) %>">继续上次的活动
+                                </a></li>
+                                <% end %>
                                 <li><a href="<%= url_for('logout') %>">退出</a></li>
                             </ul>
                         </li>

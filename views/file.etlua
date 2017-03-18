@@ -61,12 +61,22 @@
                     </form>
                     <nav aria-label="...">
                       <ul class="pager">
+                        <li class="<%= prevf and '' or 'disabled' %>">
+                            <a href="<%= prevf and url_for('file', prevf) or '#' %>">
+                                上个文件
+                            </a>
+                        </li>
                         <li class="<%= pageIndex<=1 and 'disabled' or '' %>"><a href="<%= pageIndex>1 and url_for('file', { pid=file.pid,fid=file.fid,pageid=pageIndex-1 }) or '#' %>">
                             上一页
                         </a></li>
                         <li class="<%= pageIndex>=pageCount and 'disabled' or '' %>"><a href="<%= pageIndex<pageCount and url_for('file', { pid=file.pid,fid=file.fid,pageid=pageIndex+1 }) or '#' %>">
                             下一页
                         </a></li>
+                        <li class="<%= nextf and '' or 'disabled' %>">
+                            <a href="<%= nextf and url_for('file', nextf) or '#' %>">
+                                下个文件
+                            </a>
+                        </li>
                       </ul>
                     </nav>
                 </div>

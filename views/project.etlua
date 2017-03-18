@@ -54,6 +54,9 @@
                             <small>
                                 共 <mark><%= f.fline %></mark> 行，
                                 已翻译 <mark><%= f.ntred %></mark> 行
+                                <a href="<%= url_for("merge", f) %>" class="btn btn-default" role="button">
+                                    下载
+                                </a>
                             </small>
                         </h4>
                         <p class="list-group-item"><%= f.fdesc %></p>

@@ -237,6 +237,8 @@ app:post("project", "/project/p:pid(/page:pageid)", capture_errors(function(self
     project.pline = project.pline + count
     project.ntred = project.ntred + ntred
     assert_error(project:update("pfile", "pline", "ntred"))
+    
+    ngx.shared.filepn:flush_all()
 
     return { redirect_to = self:url_for("project", self.params) }
 end))
@@ -253,6 +255,34 @@ app:get("file", "/file/p:pid/f:fid(/page:pageid)", capture_errors(function(self)
     self.pageIndex = tonumber(self.params.pageid) or 1
     self.lines = paginated:get_page(self.pageIndex)
     self.pageCount = math.ceil(self.file.fline / PER_PAGE)
+    
+    local lkey = string.format("p%df%d", self.params.pid, self.params.fid)
+    local filepn = ngx.shared.filepn
+    
+    local prevkey = lkey .. "p"
+    local prevfid = filepn:get(prevkey)
+    if not prevfid then
+        local prevfile = assert_error(db.select("MAX(fid) FROM tr_file WHERE pid = ? and fid < ?",
+            self.params.pid, self.params.fid))
+        prevfid = tonumber(prevfile[1]["MAX(fid)"]) or -1
+        filepn:set(prevkey, prevfid)
+    end
+    if prevfid > 0 then
+        self.prevf = { pid = self.file.pid, fid = prevfid }
+    end
+    
+    local nextkey = lkey .. "n"
+    local nextfid = filepn:get(nextkey)
+    if not nextfid then
+        local nextfile = assert_error(db.select("MIN(fid) FROM tr_file WHERE pid = ? and fid > ?", 
+            self.params.pid, self.params.fid))
+        nextfid = tonumber(nextfile[1]["MIN(fid)"]) or -1
+        filepn:set(nextkey, nextfid)
+    end
+    if nextfid > 0 then
+        self.nextf = { pid = self.file.pid, fid = nextfid }
+    end
+    
     if self.pageIndex <= 0 or self.pageIndex > self.pageCount then
         return { redirect_to = self:url_for("file", self.file) }
     else
@@ -307,6 +337,8 @@ app:post("file", "/file/p:pid/f:fid(/page:pageid)", capture_errors(function(self
         project.ntred = project.ntred + ntred
         assert_error(project:update("ntred"))
     end
+    
+    self.session.last_update = { pid = pid, fid = fid, pageid = pageid }
     
     local t = {
         pid = pid,
