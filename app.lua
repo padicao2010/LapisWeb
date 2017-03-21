@@ -183,7 +183,7 @@ app:post("new", "/new", capture_errors(function(self)
         { "desc", exists = true, min_length = 1, max_length = 254 },
     })
     
-    assert_error(self.current_user and self.current_user.id == 0, "创建新项目必须管理员权限！")
+    assert_error(self.admin_state, "创建新项目必须管理员权限！")
     
     local project = assert_error(MProject:create({ pname = self.params.name, pdesc = self.params.desc }))
     
@@ -212,7 +212,7 @@ app:post("project", "/project/p:pid(/page:pageid)", capture_errors(function(self
         { "uploadfile", exists = true, is_file = true },
     })
     
-    assert_error(self.current_user and self.current_user.id == 0, "上传文件必须管理员权限！")
+    assert_error(self.admin_state, "上传文件必须管理员权限！")
     
     local upfile = self.params.uploadfile
     local project = assert_error(MProject:find(self.params.pid))
