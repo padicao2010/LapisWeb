@@ -177,7 +177,7 @@ app:get("logout", "/logout", function(self)
     return { redirect_to = self:url_for("index") }
 end)
 
-app:post("new", "/new", capture_errors(function(self)
+app:post("new", "/project/new", capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "name", exists = true, min_length = 1, max_length = 44 },
         { "desc", exists = true, min_length = 1, max_length = 254 },
@@ -191,7 +191,7 @@ app:post("new", "/new", capture_errors(function(self)
     return { redirect_to = self:url_for("index") }
 end))
 
-app:get("project", "/project/p:pid(/page:pageid)", capture_errors(function(self)
+app:get("project", "/project/p:pid/files(/page:pageid)", capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
     })
@@ -205,7 +205,7 @@ app:get("project", "/project/p:pid(/page:pageid)", capture_errors(function(self)
     return { render = true }
 end))
 
-app:post("project", "/project/p:pid(/page:pageid)", capture_errors(function(self)
+app:post("project", "/project/p:pid/files(/page:pageid)", capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
         { "desc", max_length = 254 },
@@ -243,19 +243,23 @@ app:post("project", "/project/p:pid(/page:pageid)", capture_errors(function(self
     return { redirect_to = self:url_for("project", self.params) }
 end))
 
-app:get("file", "/file/p:pid/f:fid(/page:pageid)", capture_errors(function(self)
+app:get("file", "/project/p:pid/file/f:fid(/page:pageid)", capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
         { "fid", exists = true, is_integer = true },
     })
     
-    self.project = assert_error(MProject:find(self.params.pid))
+    local pid = self.params.pid
+    self.project = assert_error(MProject:find(pid))
     self.file = assert_error(MFile:find(self.params.fid))
     local paginated = MLine:paginated("where fid = ? order by lid asc", self.file.fid, { per_page = PER_PAGE })
     self.pageIndex = tonumber(self.params.pageid) or 1
-    self.lines = paginated:get_page(self.pageIndex)
     self.pageCount = math.ceil(self.file.fline / PER_PAGE)
-    
+    self.lines = paginated:get_page(self.pageIndex)
+    for _, l in ipairs(self.lines) do
+        l.pid = pid
+    end
+
     local lkey = string.format("p%df%d", self.params.pid, self.params.fid)
     local filepn = ngx.shared.filepn
     
@@ -283,14 +287,10 @@ app:get("file", "/file/p:pid/f:fid(/page:pageid)", capture_errors(function(self)
         self.nextf = { pid = self.file.pid, fid = nextfid }
     end
     
-    if self.pageIndex <= 0 or self.pageIndex > self.pageCount then
-        return { redirect_to = self:url_for("file", self.file) }
-    else
-        return { render = true }
-    end
+    return { render = true }
 end))
 
-app:post("file", "/file/p:pid/f:fid(/page:pageid)", capture_errors(function(self)
+app:post("file", "/project/p:pid/file/f:fid(/page:pageid)", capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
         { "fid", exists = true, is_integer = true },
@@ -348,7 +348,7 @@ app:post("file", "/file/p:pid/f:fid(/page:pageid)", capture_errors(function(self
     return { redirect_to = self:url_for("file", t) }
 end))
 
-app:get("merge", "/merge/p:pid/f:fid", capture_errors(function(self)
+app:get("merge", "/project/p:pid/merge/f:fid", capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
         { "fid", exists = true, is_integer = true },
@@ -387,8 +387,9 @@ app:get("merge", "/merge/p:pid/f:fid", capture_errors(function(self)
     return { redirect_to = "/" .. outp }
 end))
 
-app:get("log", "/log/f:fid/l:lid", capture_errors(function(self)
+app:get("log", "/project/p:pid/file/f:fid/log/l:lid", capture_errors(function(self)
     validate.assert_valid(self.params, {
+        { "pid", exists = true, is_integer = true },
         { "fid", exists = true, is_integer = true },
         { "lid", exists = true, is_integer = true },
     })
