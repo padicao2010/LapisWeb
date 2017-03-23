@@ -37,16 +37,16 @@
                                 <th>文件名</th>
                                 <th>时间</th>
                                 <th>大小</th>
-                                <th>操作</th>
                             </tr>
                         </thead>
                         <tbody>
                             <% for _, f in ipairs(files) do %>
                             <tr>
-                                <td><%= f.name %></td>
-                                <td><%= os.date("%Y-%m-%d %H:%M:%S", f.utime) %></td>
-                                <td><%= f.size %></td>
-                                <td><a href="<%= f.uri %>">下载</a></td>
+                                <td><a href="<%= f.uri %>">
+                                    <%= f.name %>
+                                </a></td>
+                                <td><%= os.date("%Y-%m-%d %H:%M", f.utime) %></td>
+                                <td><%= string.format("%.2f KB", f.size / 1024.0) %></td>
                             </tr>
                             <% end %>
                         </tbody>
