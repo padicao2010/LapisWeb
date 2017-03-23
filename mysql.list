@@ -40,6 +40,7 @@ CREATE TABLE tr_line(
   orgstr TEXT NOT NULL,
   trstr TEXT,
   nupd INT DEFAULT 0,
+  acceptlog INT,
   PRIMARY KEY(fid, lid),
   FOREIGN KEY(fid) REFERENCES tr_file(fid)
 );
@@ -69,6 +70,7 @@ CREATE TABLE tr_dict(
   pid INT NOT NULL,
   sstr VARCHAR(64) NOT NULL UNIQUE,
   dstr VARCHAR(64) NOT NULL,
+  acceptlog INT,
   PRIMARY KEY(did),
   FOREIGN KEY(pid) REFERENCES tr_project(pid)
 );

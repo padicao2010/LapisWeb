@@ -22,12 +22,14 @@
                                 <th>文本</th>
                                 <th>用户</th>
                                 <th>时间</th>
+                                <th>状态</th>
                             </tr>
                         </thead>
                         <tbody>  
                             <tr>
                                 <td>源文</td>
                                 <td><%= dict.sstr %></td>
+                                <td></td>
                                 <td></td>
                                 <td></td>
                             </tr>
@@ -37,6 +39,13 @@
                                 <td><%= dl.ndstr %></td>
                                 <td><%= dl.uname %></td>
                                 <td><%= dl.utime %></td>
+                                <td>
+                                    <% if dict.acceptlog and dict.acceptlog == dl.dlogid then %>
+                                    <mark>当前</mark>
+                                    <% elseif admin_state then %>
+                                    <a href="<%= url_for("setdictlog", dl) %>">设为当前</a>
+                                    <% end %>
+                                </td>
                             </tr>
                             <% end %>
                         </tbody>

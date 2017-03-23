@@ -28,7 +28,7 @@ local MLine = Model:extend("tr_line", {
     primary_key = { "fid", "lid" }
 })
 local MLog = Model:extend("tr_log", {
-    primary_key = { "logid" }
+    primary_key = "logid"
 })
 local MUser = Model:extend("tr_user", {
     primary_key = "uid"
@@ -300,7 +300,6 @@ app:post("file", "/project/p:pid/file/f:fid(/page:pageid)", capture_errors(funct
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
         { "fid", exists = true, is_integer = true },
-        { "pageid", exists = true, is_integer = true },
     })
     
     assert_error(self.current_user, "翻译修改必须登录！")
@@ -318,7 +317,7 @@ app:post("file", "/project/p:pid/file/f:fid(/page:pageid)", capture_errors(funct
             v = string.gsub(v, "\r", "")
             local line = assert_error(MLine:find(fid, lid))
             if line and line.trstr ~= v then
-                assert_error(MLog:create({
+                local log = assert_error(MLog:create({
                     fid = fid,
                     lid = lid,
                     uid = self.current_user.uid,
@@ -329,8 +328,9 @@ app:post("file", "/project/p:pid/file/f:fid(/page:pageid)", capture_errors(funct
                     ntred = ntred + 1
                 end
                 
+                line.acceptlog = log.logid
                 line.trstr = v
-                line:update("nupd", "trstr")
+                assert_error(line:update("nupd", "trstr", "acceptlog"))
             end
         end
     end
@@ -393,20 +393,43 @@ app:get("merge", "/project/p:pid/merge/f:fid", capture_errors(function(self)
     return { redirect_to = "/" .. outp }
 end))
 
-app:get("log", "/project/p:pid/file/f:fid/log/l:lid", capture_errors(function(self)
+app:get("log", "/project/p:pid/file/f:fid/line/l:lid", capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
         { "fid", exists = true, is_integer = true },
         { "lid", exists = true, is_integer = true },
     })
     
-    self.file = assert_error(MFile:find(self.params.fid))
-    self.project = assert_error(MProject:find(self.file.pid))
-    self.line = assert_error(MLine:find(self.file.fid, self.params.lid))
+    local pid, fid, lid = self.params.pid, self.params.fid, self.params.lid
+    self.file = assert_error(MFile:find(fid))
+    self.project = assert_error(MProject:find(pid))
+    self.line = assert_error(MLine:find(fid, lid))
     
-    self.logs = assert_error(db.select("l.bfstr, l.utime, u.uname FROM tr_log l, tr_user u WHERE l.fid = ? AND l.lid = ? AND l.uid = u.uid ORDER BY l.utime ASC", self.line.fid, self.line.lid))
+    self.logs = assert_error(db.select("l.logid, l.lid, l.bfstr, l.utime, u.uname FROM tr_log l, tr_user u WHERE l.fid = ? AND l.lid = ? AND l.uid = u.uid ORDER BY l.utime ASC", fid, lid))
+    for _, log in ipairs(self.logs) do
+        log.fid = fid
+        log.pid = pid
+    end
         
     return { render = true }
+end))
+
+app:get("setlog", "/project/p:pid/file/f:fid/line/l:lid/set/log:logid", capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "pid", exists = true, is_integer = true },
+        { "fid", exists = true, is_integer = true },
+        { "lid", exists = true, is_integer = true },
+    })
+    
+    assert_error(self.admin_state, "设置翻译项选择，需要管理员权限！")
+    
+    local line = assert_error(MLine:find(self.params.fid, self.params.lid))
+    local log = assert_error(MLog:find(self.params.logid))
+    line.acceptlog = log.logid
+    line.trstr = log.bfstr
+    assert_error(line:update("acceptlog", "trstr"))
+    
+    return { redirect_to = self:url_for("log", self.params) }
 end))
 
 app:get("dict", "/project/p:pid/dicts", capture_errors(function(self)
@@ -445,11 +468,14 @@ app:post("dict", "/project/p:pid/dicts", capture_errors(function(self)
             dstr = self.params.destword }))
     end
     
-    assert_error(MDictLog:create({
+    local log = assert_error(MDictLog:create({
         did = dict.did,
         uid = self.current_user.uid,
         ndstr = self.params.destword
     }))
+    
+    dict.acceptlog = log.dlogid
+    assert_error(dict:update("acceptlog"))
         
     return { redirect_to = self:url_for("dict", self.params) }
 end))
@@ -460,10 +486,33 @@ app:get("dictlog", "/project/p:pid/dict/d:did", capture_errors(function(self)
         { "did", exists = true, is_integer = true },
     })
     
-    self.project = assert_error(MProject:find(self.params.pid))
+    local pid = self.params.pid
+    self.project = assert_error(MProject:find(pid))
     self.dict = assert_error(MDict:find(self.params.did))
-    self.dictlogs = assert_error(db.select("l.ndstr, u.uname, l.utime FROM tr_dictlog l, tr_user u WHERE l.uid = u.uid AND did = ? ORDER BY l.utime", self.params.did))
+    self.dictlogs = assert_error(db.select("l.dlogid, l.did, l.ndstr, u.uname, l.utime FROM tr_dictlog l, tr_user u WHERE l.uid = u.uid AND did = ? ORDER BY l.utime", self.params.did))
+    for _, dl in ipairs(self.dictlogs) do
+        dl.pid = pid
+    end
     
     return { render = true }
 end))
+
+app:get("setdictlog", "/project/p:pid/dict/d:did/set/dl:dlogid", capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "pid", exists = true, is_integer = true },
+        { "did", exists = true, is_integer = true },
+        { "dlogid", exists = true, is_integer = true },
+    })
+    
+    assert_error(self.admin_state, "设置词典项选择，需要管理员权限！")
+    
+    local dict = assert_error(MDict:find(self.params.did))
+    local dlog = assert_error(MDictLog:find(self.params.dlogid))
+    dict.acceptlog = dlog.dlogid
+    dict.dstr = dlog.ndstr
+    assert_error(dict:update("acceptlog", "dstr"))
+    
+    return { redirect_to = self:url_for("dictlog", self.params) }
+end)) 
+
 return app

@@ -21,7 +21,14 @@
                     </div>
                     <% for _, lg in ipairs(logs) do %>
                     <div class="list-group">
-                        <h4 class="list-group-item"><mark><%= lg.uname %></mark> 于 <mark><%= lg.utime %></mark> 提交：</h4>
+                        <h4 class="list-group-item">
+                            <mark><%= lg.uname %></mark> 于 <mark><%= lg.utime %></mark> 提交：
+                            <% if line.acceptlog and line.acceptlog == lg.logid then %>
+                            <mark>当前</mark>
+                            <% elseif admin_state then %>
+                            <a href="<%= url_for("setlog", lg) %>">设为当前</a>
+                            <% end %>
+                        </h4>
                         <pre class="list-group-item" style="word-break: normal;"><code class="python"><%= lg.bfstr %></code></pre>
                     </div>
                     <% end %>
