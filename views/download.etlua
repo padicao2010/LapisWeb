@@ -1,0 +1,56 @@
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+                    <h3><a href="<%= url_for("index") %>">
+                            <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
+                        </a> /
+                        <%= project.pname %>
+                    </h3>
+                    <p><%= project.pdesc %></p>
+                </div>
+                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+                    <p>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                下载 <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a href="<%= url_for("project", project) %>">文件列表</a></li>
+                                <li><a href="<%= url_for("dict", project) %>">词典</a></li>
+                                <li class="active"><a href="#">下载</a></li>
+                            </ul>
+                        </div>
+                        共 <mark><%= #files %></mark> 文件，最近更新时间：（无）
+                        <% if admin_state then %>
+                        <a class="btn btn-default" href="<%= url_for("genupdate", project) %>">
+                            生成新更新文件
+                        </a>
+                        <% end %>
+                    </p>
+                </div>
+                    
+                <% if #files > 0 then %>
+                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>文件名</th>
+                                <th>时间</th>
+                                <th>大小</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% for _, f in ipairs(files) do %>
+                            <tr>
+                                <td><%= f.name %></td>
+                                <td><%= os.date("%Y-%m-%d %H:%M:%S", f.utime) %></td>
+                                <td><%= f.size %></td>
+                                <td><a href="<%= f.uri %>">下载</a></td>
+                            </tr>
+                            <% end %>
+                        </tbody>
+                </div>
+                <% end %>
+            </div>
+        </div>

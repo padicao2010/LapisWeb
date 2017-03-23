@@ -515,4 +515,40 @@ app:get("setdictlog", "/project/p:pid/dict/d:did/set/dl:dlogid", capture_errors(
     return { redirect_to = self:url_for("dictlog", self.params) }
 end)) 
 
+app:get("download", "/project/p:pid/downloads", capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "pid", exists = true, is_integer = true }
+    })
+    
+    local pid = self.params.pid
+    self.project = assert_error(MProject:find(pid))
+    
+    self.files = {}
+    local dir = "download/" .. pid
+    for p in lfs.dir(dir) do
+        local attrs = lfs.attributes(dir .. "/" .. p)
+        if attrs.mode == "file" then
+            table.insert(self.files, { name = p, utime = attrs.modification, size = attrs.size, uri = string.format("/%s/%s", dir, p) })
+        end
+    end
+    table.sort(self.files, function(f1, f2)
+        return f1.name < f2.name
+    end)
+    
+    return { render = true }
+end))
+
+app:get("genupdate", "/project/p:pid/genupdate", capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "pid", exists = true, is_integer = true }
+    })
+    
+    assert_error(self.admin_state, "生成新更新文件需要管理员权限！")
+    
+    local pid = self.params.pid
+    local project = assert_error(MProject:find(pid))
+    
+    return { redirect_to = self:url_for("download", project) }
+end))
+
 return app

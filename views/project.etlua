@@ -17,6 +17,7 @@
                             <ul class="dropdown-menu">
                                 <li class="active"><a href="#">文件列表</a></li>
                                 <li><a href="<%= url_for("dict", project) %>">词典</a></li>
+                                <li><a href="<%= url_for("download", project) %>">下载</a></li>
                             </ul>
                         </div>
                         共 <mark><%= project.pline %></mark> 行，
