@@ -33,6 +33,12 @@ local MLog = Model:extend("tr_log", {
 local MUser = Model:extend("tr_user", {
     primary_key = "uid"
 })
+local MDict = Model:extend("tr_dict", {
+    primary_key = "did"
+})
+local MDictLog = Model:extend("tr_dictlog", {
+    primary_key = "dlogid"
+})
 
 local function analysisFile(file, content)
     local offset = 1
@@ -403,4 +409,61 @@ app:get("log", "/project/p:pid/file/f:fid/log/l:lid", capture_errors(function(se
     return { render = true }
 end))
 
+app:get("dict", "/project/p:pid/dicts", capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "pid", exists = true, is_integer = true }
+    })
+    
+    local pid = self.params.pid
+    self.project = assert_error(MProject:find(pid))
+    self.dicts = assert_error(MDict:select("WHERE pid = ? ORDER BY did ASC", pid))
+    for _, d in ipairs(self.dicts) do
+        d.pid = pid
+    end
+    
+    return { render = true }
+end))
+
+app:post("dict", "/project/p:pid/dicts", capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "pid", exists = true, is_integer = true },
+        { "sourceword", exists = true, max_length = 60 },
+        { "destword", exists = true, max_length = 60 }
+    })
+    
+    assert_error(self.current_user, "添加词典必须登录！")
+    
+    local dict = MDict:find({ pid = self.params.pid, sstr = self.params.sourceword })
+    if dict then
+        if dict.dstr ~= self.params.destword then
+            dict.dstr = self.params.destword
+            dict:update("dstr")
+        end
+    else
+        dict = assert_error(MDict:create({ pid = self.params.pid, 
+            sstr = self.params.sourceword,
+            dstr = self.params.destword }))
+    end
+    
+    assert_error(MDictLog:create({
+        did = dict.did,
+        uid = self.current_user.uid,
+        ndstr = self.params.destword
+    }))
+        
+    return { redirect_to = self:url_for("dict", self.params) }
+end))
+
+app:get("dictlog", "/project/p:pid/dict/d:did", capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "pid", exists = true, is_integer = true },
+        { "did", exists = true, is_integer = true },
+    })
+    
+    self.project = assert_error(MProject:find(self.params.pid))
+    self.dict = assert_error(MDict:find(self.params.did))
+    self.dictlogs = assert_error(db.select("l.ndstr, u.uname, l.utime FROM tr_dictlog l, tr_user u WHERE l.uid = u.uid AND did = ? ORDER BY l.utime", self.params.did))
+    
+    return { render = true }
+end))
 return app

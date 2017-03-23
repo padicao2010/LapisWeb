@@ -1,0 +1,71 @@
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+                    <h3><a href="<%= url_for("index") %>">
+                            <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
+                        </a> /
+                        <%= project.pname %>
+                    </h3>
+                    <p><%= project.pdesc %></p>
+                </div>
+                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+                    <p>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-default">词典</button>
+                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="caret"></span>
+                                <span class="sr-only">Toggle Dropdown</span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a href="<%= url_for("project", project) %>">文件列表</a></li>
+                                <li class="active"><a href="#">词典</a></li>
+                            </ul>
+                        </div>
+                        共 <mark><%= #dicts %></mark> 项
+                        <% if current_user then %>
+                        <a class="btn btn-default" data-toggle="collapse" href="#collapseupload">
+                            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                        </a>
+                        <% end %>
+                    </p>
+                    <% if current_user then %>
+                    <div id="collapseupload" class="collapse">
+                        <form class="form-inline" method="post" enctype="multipart/form-data" >
+                            <div class="form-group">
+                                <label class="control-label" for="sword">源词：</label>
+                                <input class="form-control" id="sword" name="sourceword" required="required">
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label" for="dword">译词：</label>
+                                <input class="form-control" id="dword" name="destword" required="required">
+                            </div>
+                            <button type="submit" class="btn btn-default">添加或修改</button>
+                            </div>
+                        </form>
+                    </div>
+                    <% end %>
+                </div>
+                    
+                <% if #dicts > 0 then %>
+                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>源词</th>
+                                <th>译词</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% for _, d in ipairs(dicts) do %>
+                            <tr>
+                                <td><%= d.sstr %></td>
+                                <td><%= d.dstr %></td>
+                                <td><a href="<%= url_for("dictlog", d) %>">历史记录</a></td>
+                            </tr>
+                            <% end %>
+                        </tbody>
+                </div>
+                <% end %>
+            </div>
+        </div>

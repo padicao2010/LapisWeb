@@ -63,3 +63,23 @@ CREATE TABLE tr_log(
   FOREIGN KEY(fid, lid) REFERENCES tr_line(fid, lid),
   FOREIGN KEY(uid) REFERENCES tr_user(uid)
 );
+
+CREATE TABLE tr_dict(
+  did INT NOT NULL AUTO_INCREMENT,
+  pid INT NOT NULL,
+  sstr VARCHAR(64) NOT NULL UNIQUE,
+  dstr VARCHAR(64) NOT NULL,
+  PRIMARY KEY(did),
+  FOREIGN KEY(pid) REFERENCES tr_project(pid)
+);
+
+CREATE TABLE tr_dictlog(
+  dlogid INT NOT NULL AUTO_INCREMENT,
+  did INT NOT NULL,
+  uid INT NOT NULL,
+  utime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  ndstr VARCHAR(64) NOT NULL,
+  PRIMARY KEY(dlogid),
+  FOREIGN KEY(uid) REFERENCES tr_user(uid),
+  FOREIGN KEY(did) REFERENCES tr_dict(did)
+);

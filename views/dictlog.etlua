@@ -1,0 +1,46 @@
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+                    <h3><a href="<%= url_for("index") %>">
+                            <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
+                        </a> /
+                        <a href="<%= url_for("project", project) %>">
+                            <%= project.pname %>
+                        </a> /
+                        <a href="<%= url_for("dict", project) %>">
+                            词典
+                        </a> /
+                        <%= dict.sstr %>
+                    </h3>
+                    <p>共修改 <mark><%= #dictlogs %></mark> 次</p>
+                </div>
+                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>类型</th>
+                                <th>文本</th>
+                                <th>用户</th>
+                                <th>时间</th>
+                            </tr>
+                        </thead>
+                        <tbody>  
+                            <tr>
+                                <td>源文</td>
+                                <td><%= dict.sstr %></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <% for _, dl in ipairs(dictlogs) do %>
+                            <tr>
+                                <td>译文</td>
+                                <td><%= dl.ndstr %></td>
+                                <td><%= dl.uname %></td>
+                                <td><%= dl.utime %></td>
+                            </tr>
+                            <% end %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>

@@ -5,19 +5,33 @@
                             <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
                         </a> /
                         <%= project.pname %>
+                    </h3>
+                    <p><%= project.pdesc %></p>
+                </div>
+                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+                    <p>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-default">文件列表</button>
+                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="caret"></span>
+                                <span class="sr-only">Toggle Dropdown</span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li class="active"><a href="#">文件列表</a></li>
+                                <li><a href="<%= url_for("dict", project) %>">词典</a></li>
+                            </ul>
+                        </div>
+                        共 <mark><%= project.pline %></mark> 行，
+                        已翻译 <mark><%= project.ntred %></mark> 行，
+                        共 <mark><%= project.pfile %></mark> 个文件，
+                        共 <mark><%= pageCount %></mark> 页，
+                        第 <mark><%= pageIndex %></mark> 页
+                        
                         <% if admin_state then %>
                         <a class="btn btn-default" data-toggle="collapse" href="#collapseupload">
                             <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                         </a>
                         <% end %>
-                    </h3>
-                    <p><%= project.pdesc %></p>
-                    <p>
-                        共 <mark><%= project.pfile %></mark> 个文件，
-                        共 <mark><%= project.pline %></mark> 行，
-                        已翻译 <mark><%= project.ntred %></mark> 行，
-                        共 <mark><%= pageCount %></mark> 页，
-                        第 <mark><%= pageIndex %></mark> 页
                     </p>
                     <% if admin_state then %>
                     <div id="collapseupload" class="collapse">
