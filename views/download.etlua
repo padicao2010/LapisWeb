@@ -46,7 +46,7 @@
                         <tbody>
                             <% for _, f in ipairs(files) do %>
                             <tr>
-                                <td><a href="<%= f.uri %>">
+                                <td><a href="<%= f.uri %>" target="_blank">
                                     <%= f.name %>
                                 </a></td>
                                 <td><%= os.date("%Y-%m-%d %H:%M", f.utime) %></td>
