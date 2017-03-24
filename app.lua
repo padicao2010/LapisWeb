@@ -552,7 +552,7 @@ app:get("checklines", "/project/p:pid/checklines", capture_errors(function(self)
     self.prevtime = self.project.lastupdate
     self.curtime = db.format_date()
     
-    self.lines = assert_error(db.select("* FROM tr_line WHERE (fid, lid) IN (SELECT fid, lid FROM tr_log WHERE utime >= ? AND utime < ?) ORDER BY fid, lid", self.prevtime, self.curtime))
+    self.lines = assert_error(db.select("* FROM tr_line l WHERE EXISTS (SELECT * FROM tr_file f WHERE f.pid = ? AND f.fid = l.fid) AND EXISTS (SELECT * FROM tr_log lg WHERE lg.fid = l.fid AND lg.lid = l.lid AND lg.utime >= ? AND lg.utime < ?) ORDER BY l.fid, l.lid", pid, self.prevtime, self.curtime))
     
     for _, l in ipairs(self.lines) do
         l.pid = pid
@@ -574,7 +574,7 @@ app:get("checkdicts", "/project/p:pid/checkdicts(/t:time)", capture_errors(funct
     self.prevtime = self.project.lastupdate
     self.curtime = self.params.time and util.unescape(self.params.time) or db.format_date()
     
-    self.dicts = assert_error(db.select("* FROM tr_dict WHERE did IN (SELECT did FROM tr_dictlog WHERE utime >= ? AND utime < ?) ORDER BY did", self.prevtime, self.curtime))
+    self.dicts = assert_error(db.select("* FROM tr_dict d WHERE d.pid = ? AND EXISTS (SELECT * FROM tr_dictlog dl WHERE dl.did = d.did AND dl.utime >= ? AND dl.utime < ?) ORDER BY d.did", pid, self.prevtime, self.curtime))
     
     for _, d in ipairs(self.dicts) do
         d.pid = pid
@@ -596,7 +596,7 @@ app:get("genupdate", "/project/p:pid/genupdate/t:time", capture_errors(function(
     local prevtime = project.lastupdate
     local curtime = self.params.time and util.unescape(self.params.time) or db.format_date()
     
-    local lines = assert_error(db.select("f.fname, l.lid, l.trstr FROM tr_line l, tr_file f WHERE (l.fid, l.lid) IN (SELECT fid, lid FROM tr_log WHERE utime >= ? AND utime < ?) AND l.fid = f.fid ORDER BY l.fid, l.lid", prevtime, curtime))
+    local lines = assert_error(db.select("f.fname, l.lid, l.trstr FROM tr_line l, tr_file f WHERE f.pid = ? AND f.fid = l.fid AND EXISTS (SELECT * FROM tr_log lg WHERE lg.fid = l.fid AND lg.lid = l.lid AND lg.utime >= ? AND lg.utime < ?) ORDER BY l.fid, l.lid", pid, prevtime, curtime))
     
     local path = string.format("download/%d/update-%s.json", pid, curtime)
     local output = assert_error(io.open(path, "w"))
