@@ -70,11 +70,11 @@ local function analysisFile(file, content)
                         lid = ldata.lid,
                         uid = 1,
                         bfstr = s
-                    })
-                    ldata.ntred = 1
+                    }))
+                    ldata.nupd = 1
                     ldata.acceptlog = logdata.logid
                     ldata.trstr = s
-                    assert_error(ldata:update("ntred", "acceptlog", "trstr"))
+                    assert_error(ldata:update("nupd", "acceptlog", "trstr"))
                         
                     ntred = ntred + 1
                 end
