@@ -5,6 +5,7 @@ local encoding = require("lapis.util.encoding")
 local lfs = require("lfs")
 local date = require("date")
 local db = require("lapis.db")
+local util = require("lapis.util")
 
 local config = require("lapis.config").get()
 
@@ -538,7 +539,51 @@ app:get("download", "/project/p:pid/downloads", capture_errors(function(self)
     return { render = true }
 end))
 
-app:get("genupdate", "/project/p:pid/genupdate", capture_errors(function(self)
+app:get("checklines", "/project/p:pid/checklines", capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "pid", exists = true, is_integer = true }
+    })
+    
+    assert_error(self.admin_state, "生成新更新文件需要管理员权限！")
+    
+    local pid = self.params.pid
+    self.project = assert_error(MProject:find(pid))
+    
+    self.prevtime = self.project.lastupdate
+    self.curtime = db.format_date()
+    
+    self.lines = assert_error(db.select("* FROM tr_line WHERE (fid, lid) IN (SELECT fid, lid FROM tr_log WHERE utime >= ? AND utime < ?) ORDER BY fid, lid", self.prevtime, self.curtime))
+    
+    for _, l in ipairs(self.lines) do
+        l.pid = pid
+    end
+    
+    return { render = true }
+end))
+
+app:get("checkdicts", "/project/p:pid/checkdicts(/t:time)", capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "pid", exists = true, is_integer = true }
+    })
+    
+    assert_error(self.admin_state, "生成新更新文件需要管理员权限！")
+    
+    local pid = self.params.pid
+    self.project = assert_error(MProject:find(pid))
+    
+    self.prevtime = self.project.lastupdate
+    self.curtime = self.params.time and util.unescape(self.params.time) or db.format_date()
+    
+    self.dicts = assert_error(db.select("* FROM tr_dict WHERE did IN (SELECT did FROM tr_dictlog WHERE utime >= ? AND utime < ?) ORDER BY did", self.prevtime, self.curtime))
+    
+    for _, d in ipairs(self.dicts) do
+        d.pid = pid
+    end
+    
+    return { render = true }
+end))
+
+app:get("genupdate", "/project/p:pid/genupdate/t:time", capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true }
     })
@@ -548,7 +593,20 @@ app:get("genupdate", "/project/p:pid/genupdate", capture_errors(function(self)
     local pid = self.params.pid
     local project = assert_error(MProject:find(pid))
     
-    return { redirect_to = self:url_for("download", project) }
+    local prevtime = project.lastupdate
+    local curtime = self.params.time and util.unescape(self.params.time) or db.format_date()
+    
+    local lines = assert_error(db.select("f.fname, l.lid, l.trstr FROM tr_line l, tr_file f WHERE (l.fid, l.lid) IN (SELECT fid, lid FROM tr_log WHERE utime >= ? AND utime < ?) AND l.fid = f.fid ORDER BY l.fid, l.lid", prevtime, curtime))
+    
+    local path = string.format("download/%d/update-%s.json", pid, curtime)
+    local output = assert_error(io.open(path, "w"))
+    output:write(require("cjson").encode(lines))
+    output:close()
+    
+    project.lastupdate = curtime
+    assert_error(project:update("lastupdate"))
+    
+    return { redirect_to = self:url_for("download", self.params) }
 end))
 
 return app

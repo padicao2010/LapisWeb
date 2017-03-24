@@ -1,0 +1,52 @@
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+                    <h3><a href="<%= url_for("index") %>">
+                            <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
+                        </a> /
+                        <a href="<%= url_for("download", project) %>">
+                            <%= project.pname %>
+                        </a> /
+                        审查
+                    </h3>
+                    <p><%= project.pdesc %></p>
+                </div>
+                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+                    <h4> 审查翻译
+                        <a class="btn btn-default" href="<%= url_for("checkdicts", { pid = project.pid, time = curtime }) %>">
+                            下一步：审查词典
+                        </a>
+                    </h4>
+                    <p>
+                        正在审查从 <mark><%= prevtime %></mark> 到 <mark><%= curtime %></mark> 的翻译修改……
+                    </p>
+                </div>
+                    
+                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>原文</th>
+                                <th>译文</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% for _, l in ipairs(lines) do %>
+                            <tr>
+                                <td><prev><code>
+                                    <%= l.orgstr %>
+                                </code></prev></td>
+                                <td><prev><code>
+                                    <%= l.trstr %>
+                                </code></prev></td>
+                                <td><a href="<%= url_for("log", l) %>" target="_blank">
+                                    <span class="glyphicon glyphicon-edit"></span>
+                                </a></td>
+                            </tr>
+                            <% end %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>

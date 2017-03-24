@@ -20,10 +20,14 @@
                                 <li class="active"><a href="#">下载</a></li>
                             </ul>
                         </div>
-                        共 <mark><%= #files %></mark> 文件，最近更新时间：（无）
+                        共 <mark><%= #files %></mark> 文件，
+                        最近生成更新时间：<mark><%= project.lastupdate %></mark>
                         <% if admin_state then %>
-                        <a class="btn btn-default" href="<%= url_for("genupdate", project) %>">
-                            生成新更新文件
+                        <a class="btn btn-default" href="<%= url_for("checklines", project) %>">
+                            审查翻译
+                        </a>
+                        <a class="btn btn-default" href="<%= url_for("checkdicts", project) %>">
+                            审查词典
                         </a>
                         <% end %>
                     </p>
