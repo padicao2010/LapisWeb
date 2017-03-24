@@ -22,9 +22,6 @@ local MProject = Model:extend("tr_project", {
 local MFile = Model:extend("tr_file", {
     primary_key = "fid"
 })
-local MFileText = Model:extend("tr_filetext", {
-    primary_key = "fid"
-})
 local MLine = Model:extend("tr_line", {
     primary_key = { "fid", "lid" }
 })
@@ -60,16 +57,25 @@ local function analysisFile(file, content)
                 desc = lastline
                 orig = l
             else
-                assert_error(MLine:create({
+                local ldata = assert_error(MLine:create({
                     lid = line,
                     fid = file.fid,
-                    pos = offset,
                     ldesc = desc or "",
                     orgstr = orig,
-                    trstr = s,
-                    nupd = (s ~= "") and 1 or 0
+                    trstr = ""
                 }))
                 if s ~= "" then
+                    local logdata = assert_error(MLog:create({
+                        fid = file.fid,
+                        lid = ldata.lid,
+                        uid = 1,
+                        bfstr = s
+                    })
+                    ldata.ntred = 1
+                    ldata.acceptlog = logdata.logid
+                    ldata.trstr = s
+                    assert_error(ldata:update("ntred", "acceptlog", "trstr"))
+                        
                     ntred = ntred + 1
                 end
                 count = count + 1
@@ -228,10 +234,6 @@ app:post("project", "/project/p:pid/files(/page:pageid)", capture_errors(functio
         fname = upfile.filename,
         fdesc = self.params.desc,
     }))
-    assert_error(MFileText:create({
-        fid = file.fid,
-        ftext = upfile.content
-    }))
 
     local count, ntred = analysisFile(file, upfile.content)
     if count > 0 then
@@ -353,45 +355,6 @@ app:post("file", "/project/p:pid/file/f:fid(/page:pageid)", capture_errors(funct
         pageid = pageid + 1
     }
     return { redirect_to = self:url_for("file", t) }
-end))
-
-app:get("merge", "/project/p:pid/merge/f:fid", capture_errors(function(self)
-    validate.assert_valid(self.params, {
-        { "pid", exists = true, is_integer = true },
-        { "fid", exists = true, is_integer = true },
-    })
-    
-    local fid = self.params.fid
-    local file = MFile:find(fid)
-    local filetext = MFileText:find(fid)
-    local content = filetext.ftext
-    local lines = MLine:select("where fid = ? order by lid asc", fid)
-    
-    local offset = 1
-    local outp = string.format("download/%d/%s", file.pid, file.fname)
-    local output = assert(io.open(outp, "w"))
-    for _, l in ipairs(lines) do
-        if l.pos > offset then
-            output:write(string.sub(content, offset, l.pos - 1))
-        end
-        local eols, eole = string.find(content, "\r?\n", l.pos)
-        local s = string.sub(content, l.pos, eols and eols - 1)
-        
-        local strs, stre = string.find(s, "\".*\"")
-        output:write(string.sub(s, 1, strs))
-        output:write(l.trstr)
-        output:write(string.sub(s, stre))
-        
-        if eols then
-            output:write(string.sub(content, eols, eole))
-            offset = eole + 1
-        else
-            break
-        end
-    end
-    output:close()
-    
-    return { redirect_to = "/" .. outp }
 end))
 
 app:get("log", "/project/p:pid/file/f:fid/line/l:lid", capture_errors(function(self)
