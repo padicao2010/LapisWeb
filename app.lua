@@ -69,6 +69,7 @@ local function analysisFile(file, content)
                         fid = file.fid,
                         lid = ldata.lid,
                         uid = 1,
+                        utime = db.format_date(0),
                         bfstr = s
                     }))
                     ldata.nupd = 1
