@@ -61,7 +61,7 @@
                     <% for _, f in ipairs(files) do %>
                     <div class="list-group">
                         <a class="list-group-item" href="<%= url_for("file", f) %>">
-                            <h4 class="list-group-item">
+                            <h4>
                                 <%= f.fname %>
                             </h4>
                             <p>
