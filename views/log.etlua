@@ -12,28 +12,26 @@
                         </a> /
                         第 <%= line.lid %> 行
                     </h3>
-                    <p>共修改 <mark><%= line.nupd %></mark> 次</p>
+                    <p>共修改 <span class="text-warning"><%= line.nupd %></span> 次</p>
                 </div>
                 <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
                     <div class="list-group">
                         <h4 class="list-group-item">来源</h4>
-                        <pre  class="list-group-item" style="word-break: normal;"><code class="python"><%= line.orgstr %></code></pre>
+                        <pre class="list-group-item"><%= line.orgstr %></pre>
                     </div>
                     <% for _, lg in ipairs(logs) do %>
                     <div class="list-group">
                         <h4 class="list-group-item">
-                            <mark><%= lg.uname %></mark> 于 <mark><%= lg.utime %></mark> 提交：
+                            <span class="text-warning"><%= lg.uname %></span> 于 <span class="text-warning"><%= lg.utime %></span> 提交：
                             <% if line.acceptlog and line.acceptlog == lg.logid then %>
-                            <mark>当前</mark>
+                            <span class="label label-primary">当前</span>
                             <% elseif admin_state then %>
-                            <a href="<%= url_for("setlog", lg) %>">设为当前</a>
+                            <a class="btn btn-warning" href="<%= url_for("setlog", lg) %>">设为当前</a>
                             <% end %>
                         </h4>
-                        <pre class="list-group-item" style="word-break: normal;"><code class="python"><%= lg.bfstr %></code></pre>
+                        <pre class="list-group-item"><%= lg.bfstr %></pre>
                     </div>
                     <% end %>
                 </div>
             </div>
         </div>
-        <script src="/static/js/highlight.min.js"></script>
-        <script>hljs.initHighlightingOnLoad();</script>

@@ -2,10 +2,9 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title><%= page_title or "捭阖翻翻翻" %></title>
+        <title>捭阖翻翻翻</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="/static/css/bootstrap.min.css" rel="stylesheet">
-        <link href="/static/css/highlight.min.css" rel="stylesheet">
         <link rel="shortcut icon" href="/favicon.ico">
     </head>
     <body>
@@ -21,6 +20,7 @@
                     <a class="navbar-brand" href="<%= url_for('index') %>">捭阖翻翻翻</a>
                 </div>
                 <div class="collapse navbar-collapse bs-navbar-collapse-1">
+                    <p class="navbar-text">钻石之心不会受伤……不也挺好吗？</p>
                     <ul class="nav navbar-nav navbar-right">
                         <% if current_user then %>
                         <li class="dropdown">

@@ -18,7 +18,7 @@
                         </a>
                     </h4>
                     <p>
-                        正在审查从 <mark><%= prevtime %></mark> 到 <mark><%= curtime %></mark> 的翻译修改……
+                        正在审查从 <span class="text-warning"><%= prevtime %></span> 到 <span class="text-warning"><%= curtime %></span> 的翻译修改……
                     </p>
                 </div>
                     
@@ -34,12 +34,12 @@
                         <tbody>
                             <% for _, l in ipairs(lines) do %>
                             <tr>
-                                <td><prev><code>
+                                <td><prev>
                                     <%= l.orgstr %>
-                                </code></prev></td>
-                                <td><prev><code>
+                                </prev></td>
+                                <td><prev>
                                     <%= l.trstr %>
-                                </code></prev></td>
+                                </prev></td>
                                 <td><a href="<%= url_for("log", l) %>" target="_blank">
                                     <span class="glyphicon glyphicon-edit"></span>
                                 </a></td>

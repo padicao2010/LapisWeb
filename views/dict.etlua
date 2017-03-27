@@ -21,7 +21,7 @@
                             </ul>
 
                         </div>
-                        共 <mark><%= #dicts %></mark> 项
+                        共 <span class="text-warning"><%= #dicts %></span> 项
                         <% if current_user then %>
                         <a class="btn btn-default" data-toggle="collapse" href="#collapseupload">
                             <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>

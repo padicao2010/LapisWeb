@@ -41,9 +41,9 @@
                                 <%= p.pname %>
                             </a>
                             <small>
-                                共 <mark><%= p.pfile %></mark> 个文件，
-                                共 <mark><%= p.pline %></mark> 行，
-                                已翻译 <mark><%= p.ntred %></mark> 行
+                                共 <span class="text-warning"><%= p.pfile %></span> 个文件，
+                                共 <span class="text-warning"><%= p.pline %></span> 行，
+                                已翻译 <span class="text-warning"><%= p.ntred %></span> 行
                             </small>
                         </h4>
                         <p class="list-group-item"><%= p.pdesc %></p>

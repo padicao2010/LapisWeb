@@ -20,11 +20,11 @@
                                 <li><a href="<%= url_for("download", project) %>">下载</a></li>
                             </ul>
                         </div>
-                        共 <mark><%= project.pline %></mark> 行，
-                        已翻译 <mark><%= project.ntred %></mark> 行，
-                        共 <mark><%= project.pfile %></mark> 个文件，
-                        共 <mark><%= pageCount %></mark> 页，
-                        第 <mark><%= pageIndex %></mark> 页
+                        共 <span class="text-warning"><%= project.pline %></span> 行，
+                        已翻译 <span class="text-warning"><%= project.ntred %></span> 行，
+                        共 <span class="text-warning"><%= project.pfile %></span> 个文件，
+                        共 <span class="text-warning"><%= pageCount %></span> 页，
+                        第 <span class="text-warning"><%= pageIndex %></span> 页
                         
                         <% if admin_state then %>
                         <a class="btn btn-default" data-toggle="collapse" href="#collapseupload">
@@ -65,8 +65,8 @@
                                 <%= f.fname %>
                             </a>
                             <small>
-                                共 <mark><%= f.fline %></mark> 行，
-                                已翻译 <mark><%= f.ntred %></mark> 行
+                                共 <span class="text-warning"><%= f.fline %></span> 行，
+                                已翻译 <span class="text-warning"><%= f.ntred %></span> 行
                             </small>
                         </h4>
                         <p class="list-group-item"><%= f.fdesc %></p>

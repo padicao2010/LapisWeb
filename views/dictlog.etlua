@@ -12,7 +12,7 @@
                         </a> /
                         <%= dict.sstr %>
                     </h3>
-                    <p>共修改 <mark><%= #dictlogs %></mark> 次</p>
+                    <p>共修改 <span class="text-warning"><%= #dictlogs %></span> 次</p>
                 </div>
                 <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
                     <table class="table">
@@ -41,9 +41,9 @@
                                 <td><%= dl.utime %></td>
                                 <td>
                                     <% if dict.acceptlog and dict.acceptlog == dl.dlogid then %>
-                                    <mark>当前</mark>
+                                    <span class="label label-primary">当前</span>
                                     <% elseif admin_state then %>
-                                    <a href="<%= url_for("setdictlog", dl) %>">设为当前</a>
+                                    <a class="btn btn-warning" href="<%= url_for("setdictlog", dl) %>">设为当前</a>
                                     <% end %>
                                 </td>
                             </tr>

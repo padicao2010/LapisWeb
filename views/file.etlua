@@ -11,10 +11,10 @@
                     </h3>
                     <p><%= file.fdesc %></p>
                     <p>
-                        共 <mark><%= file.fline %></mark> 行，
-                        已翻译 <mark><%= file.ntred %></mark>行，
-                        共 <mark><%= pageCount %></mark> 页，
-                        第 <mark><%= pageIndex %></mark> 页
+                        共 <span class="text-warning"><%= file.fline %></span> 行，
+                        已翻译 <span class="text-warning"><%= file.ntred %></span>行，
+                        共 <span class="text-warning"><%= pageCount %></span> 页，
+                        第 <span class="text-warning"><%= pageIndex %></span> 页
                     </p>
                     <form method='post'>
                         <table class="table">
@@ -35,11 +35,11 @@
                                     </td>
                                     <td>
                                         <p><%= l.ldesc %></p>
-                                        <pre style="word-break: normal;"><code class="python"><%= l.orgstr %></code></pre>
+                                        <pre style=""><%= l.orgstr %></pre>
                                         <% if current_user then %>
                                         <textarea class="form-control" name="line<%= l.lid %>" rows="3"><%= l.trstr %></textarea>
                                         <% else %>
-                                        <pre style="word-break: normal;"><code class="python"><%= l.trstr %></code></pre>
+                                        <pre style=""><%= l.trstr %></pre>
                                         <% end %>
                                     </td>
                                 </tr>
@@ -78,5 +78,3 @@
                 </div>
             </div>
         </div>
-        <script src="/static/js/highlight.min.js"></script>
-        <script>hljs.initHighlightingOnLoad();</script>

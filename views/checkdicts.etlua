@@ -18,7 +18,7 @@
                         </a>
                     </h4>
                     <p>
-                        正在审查从 <mark><%= prevtime %></mark> 到 <mark><%= curtime %></mark> 的词典修改……
+                        正在审查从 <span class="text-warning"><%= prevtime %></span> 到 <span class="text-warning"><%= curtime %></span> 的词典修改……
                     </p>
                 </div>
                     
@@ -34,12 +34,12 @@
                         <tbody>
                             <% for _, d in ipairs(dicts) do %>
                             <tr>
-                                <td><prev><code>
+                                <td><prev>
                                     <%= d.sstr %>
-                                </code></prev></td>
-                                <td><prev><code>
+                                </prev></td>
+                                <td><prev>
                                     <%= d.dstr %>
-                                </code></prev></td>
+                                </prev></td>
                                 <td><a href="<%= url_for("dictlog", d) %>" target="_blank">
                                     <span class="glyphicon glyphicon-edit"></span>
                                 </a></td>

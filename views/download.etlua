@@ -20,8 +20,8 @@
                                 <li class="active"><a href="#">下载</a></li>
                             </ul>
                         </div>
-                        共 <mark><%= #files %></mark> 文件，
-                        最近生成更新时间：<mark><%= project.lastupdate %></mark>
+                        共 <span class="text-warning"><%= #files %></span> 文件，
+                        最近生成更新时间：<span class="text-warning"><%= project.lastupdate %></span>
                         <% if admin_state then %>
                         <a class="btn btn-default" href="<%= url_for("checklines", project) %>">
                             审查翻译
