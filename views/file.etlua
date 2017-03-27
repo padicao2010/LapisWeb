@@ -20,7 +20,7 @@
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th style="min-width: 48px;">行号</th>
+                                    <th>行号</th>
                                     <th>内容</th>
                                 </tr>
                             </thead>
@@ -35,11 +35,11 @@
                                     </td>
                                     <td>
                                         <p><%= l.ldesc %></p>
-                                        <pre style=""><%= l.orgstr %></pre>
+                                        <pre><%= l.orgstr %></pre>
                                         <% if current_user then %>
                                         <textarea class="form-control" name="line<%= l.lid %>" rows="3"><%= l.trstr %></textarea>
                                         <% else %>
-                                        <pre style=""><%= l.trstr %></pre>
+                                        <pre><%= l.trstr %></pre>
                                         <% end %>
                                     </td>
                                 </tr>
