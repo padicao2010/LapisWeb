@@ -68,8 +68,8 @@
                                 共 <span class="text-warning"><%= f.fline %></span> 行，
                                 已翻译 <span class="text-warning"><%= f.ntred %></span> 行
                             </p>
-                            <pre><%= f.fdesc %></pre>
                         </a>
+                        <pre class="list-group-item"><%= f.fdesc %></pre>
                     </div>
                     <% end %>
 

@@ -45,8 +45,8 @@
                                 共 <span class="text-warning"><%= p.pline %></span> 行，
                                 已翻译 <span class="text-warning"><%= p.ntred %></span> 行
                             </p>
-                            <pre><%= p.pdesc %></pre>
                         </a>
+                        <pre class="list-group-item"><%= p.pdesc %></pre>
                     </div>
                     <% end %>
                 </div>
