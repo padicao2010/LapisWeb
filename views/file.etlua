@@ -20,22 +20,19 @@
                         <% for _, l in ipairs(lines) do %>
                         <div class="list-group">
                             <p class="list-group-item">
-                                <mark><%= l.lid %></mark>
-                                <a href="<%= url_for("log", l) %>">
+                                <span class="label label-primary"><%= l.lid %></span>
+                                <a class="label label-primary" href="<%= url_for("log", l) %>">
                                     <%= l.nupd %>条历史记录
                                 </a>
                             </p>
                             <p class="list-group-item"><%= l.ldesc %></p>
-                            <pre class="list-group-item">
-                                <%= l.orgstr %>
-                            </pre>
+                            <pre class="list-group-item"><%= l.orgstr %></pre>
                             <% if current_user then %>
-                            <textarea class="list-group-item" name="line<%= l.lid %>" rows="3"><%= l.trstr %></textarea>
+                            <textarea class="list-group-item form-control" name="line<%= l.lid %>" rows="3"><%= l.trstr %></textarea>
                             <% else %>
-                            <pre class="list-group-item>
-                                <%= l.trstr %>
-                            </pre>
+                            <pre class="list-group-item"><%= l.trstr %></pre>
                             <% end %>
+                        </div>
                         <% end %>
                         <% if current_user then %>
                             <button type="submit" class="btn btn-primary">提交更改并继续</button>
