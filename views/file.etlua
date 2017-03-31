@@ -17,43 +17,29 @@
                         第 <span class="text-warning"><%= pageIndex %></span> 页
                     </p>
                     <form method='post'>
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>行号</th>
-                                    <th>内容</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <% for _, l in ipairs(lines) do %>
-                                <tr>
-                                    <td>
-                                        <p><%= l.lid %></p>
-                                        <p><a href="<%= url_for("log", l) %>">
-                                            <%= l.nupd %>条记录
-                                        </a></p>
-                                    </td>
-                                    <td>
-                                        <p><%= l.ldesc %></p>
-                                        <pre><%= l.orgstr %></pre>
-                                        <% if current_user then %>
-                                        <textarea class="form-control" name="line<%= l.lid %>" rows="3"><%= l.trstr %></textarea>
-                                        <% else %>
-                                        <pre><%= l.trstr %></pre>
-                                        <% end %>
-                                    </td>
-                                </tr>
-                                <% end %>
-                                <% if current_user then %>
-                                <tr>
-                                    <td></td>
-                                    <td class="text-right">
-                                        <button type="submit" class="btn btn-primary">提交更改并继续</button>
-                                    </td>
-                                </tr>
-                                <% end %>
-                            </tbody>
-                        </table>
+                        <% for _, l in ipairs(lines) do %>
+                        <div class="list-group">
+                            <p class="list-group-item">
+                                <mark><%= l.lid %></mark>
+                                <a href="<%= url_for("log", l) %>">
+                                    <%= l.nupd %>条历史记录
+                                </a>
+                            </p>
+                            <p class="list-group-item"><%= l.ldesc %></p>
+                            <pre class="list-group-item">
+                                <%= l.orgstr %>
+                            </pre>
+                            <% if current_user then %>
+                            <textarea class="list-group-item" name="line<%= l.lid %>" rows="3"><%= l.trstr %></textarea>
+                            <% else %>
+                            <pre class="list-group-item>
+                                <%= l.trstr %>
+                            </pre>
+                            <% end %>
+                        <% end %>
+                        <% if current_user then %>
+                            <button type="submit" class="btn btn-primary">提交更改并继续</button>
+                        <% end %>
                     </form>
                     <nav aria-label="...">
                       <ul class="pager">
