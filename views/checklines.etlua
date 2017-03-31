@@ -34,12 +34,8 @@
                         <tbody>
                             <% for _, l in ipairs(lines) do %>
                             <tr>
-                                <td><prev>
-                                    <%= l.orgstr %>
-                                </prev></td>
-                                <td><prev>
-                                    <%= l.trstr %>
-                                </prev></td>
+                                <td><pre><%= l.orgstr %></pre></td>
+                                <td><pre><%= l.trstr %></pre></td>
                                 <td><a href="<%= url_for("log", l) %>" target="_blank">
                                     <span class="glyphicon glyphicon-edit"></span>
                                 </a></td>

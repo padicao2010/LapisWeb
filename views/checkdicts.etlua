@@ -34,12 +34,8 @@
                         <tbody>
                             <% for _, d in ipairs(dicts) do %>
                             <tr>
-                                <td><prev>
-                                    <%= d.sstr %>
-                                </prev></td>
-                                <td><prev>
-                                    <%= d.dstr %>
-                                </prev></td>
+                                <td><pre><%= d.sstr %></pre></td>
+                                <td><pre><%= d.dstr %></pre></td>
                                 <td><a href="<%= url_for("dictlog", d) %>" target="_blank">
                                     <span class="glyphicon glyphicon-edit"></span>
                                 </a></td>
