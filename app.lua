@@ -38,7 +38,13 @@ local MDictLog = Model:extend("tr_dictlog", {
     primary_key = "dlogid"
 })
 
-local function analysisFile(file, content)
+local function analysisRenpyFile(proj, name, content, fdesc)
+    local file = assert_error(MFile:create({
+        pid = proj.pid,
+        fname = name,
+        fdesc = fdesc,
+    }))
+    
     local offset = 1
     local line = 1
     local orig
@@ -46,7 +52,6 @@ local function analysisFile(file, content)
     local ntred = 0
     local lastline
     local desc
-    
     while true do
         local eols, eole = string.find(content, "\r?\n", offset)
         local l = string.sub(content, offset, eols and eols - 1)
@@ -94,17 +99,28 @@ local function analysisFile(file, content)
             line = line + 1
         end
     end
-    return count, ntred
+    
+    if count > 0 then
+        file.fline = count
+        file.ntred = ntred 
+        assert(file:update("fline", "ntred"))
+    end
+    
+    return 1, count, ntred
+end
+
+local function analysisLuaFile(proj, name, content, fdesc)
+    return 0, 0, 0
 end
 
 local app = lapis.Application()
 app:enable("etlua")
 app.layout = require "views.layout"
-
+--[[
 app.handle_error = function(self, err, trace)
     return { render = "error", status = 404 }
 end
-
+]]
 app:before_filter(function(self)
     local id = self.session.user_id
         
@@ -222,28 +238,28 @@ end))
 app:post("project", "/project/p:pid/files(/page:pageid)", capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
+        { "type", exists = true },
         { "desc", max_length = 254 },
         { "uploadfile", exists = true, is_file = true },
     })
     
     assert_error(self.admin_state, "上传文件必须管理员权限！")
     
+    local filetype = self.params.type
     local upfile = self.params.uploadfile
+    
     local project = assert_error(MProject:find(self.params.pid))
-    local file = assert_error(MFile:create({
-        pid = self.params.pid,
-        fname = upfile.filename,
-        fdesc = self.params.desc,
-    }))
 
-    local count, ntred = analysisFile(file, upfile.content)
-    if count > 0 then
-        file.fline = count
-        file.ntred = ntred 
-        assert(file:update("fline", "ntred"))
+    local nfile, count, ntred
+    if filetype == "renpy" then
+        nfile, count, ntred = analysisRenpyFile(project, upfile.filename, upfile.content, self.params.desc)
+    elseif filetype == "lua" then
+        nfile, count, ntred = analysisLuaFile(project, upfile.filename, upfile.content, self.params.desc)
+    else
+        assert_error(nil, "文件类型不支持：" .. tostring(filetype))
     end
     
-    project.pfile = project.pfile + 1
+    project.pfile = project.pfile + nfile
     project.pline = project.pline + count
     project.ntred = project.ntred + ntred
     assert_error(project:update("pfile", "pline", "ntred"))
