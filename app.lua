@@ -110,17 +110,66 @@ local function analysisRenpyFile(proj, name, content, fdesc)
 end
 
 local function analysisLuaFile(proj, name, content, fdesc)
-    return 0, 0, 0
+    local plpretty = require "pl.pretty"
+    local trs = plpretty.read(content)
+    
+    local nfile, count, ntred = 0, 0, 0
+    
+    for _, tr in ipairs(trs) do
+        local file = assert_error(MFile:create({
+            pid = proj.pid,
+            fname = tr[2],
+            fdesc = string.format("%s\n%s", tr[1], tr[3]),
+            fline = #tr - 5,
+            ntred = tr[4]
+        }))
+        nfile = nfile + 1
+        count = count + file.fline
+        ntred = ntred + file.ntred
+        
+        for i = 6, #tr do
+            local s = tr[i]
+            local lineid = i - 5
+            local linedesc = s[1]
+            if #s == 5 and s[4] then
+                linedesc = string.format("%s (英：%s)", linedesc, s[4])
+            end
+            local line = assert_error(MLine:create({
+                fid = file.fid,
+                lid = lineid,
+                ldesc = linedesc,
+                orgstr = s[3],
+                trstr = ""
+            }))
+
+            if s[2] == 1 then
+                local logdata = assert_error(MLog:create({
+                    fid = file.fid,
+                    lid = lineid,
+                    uid = 1,
+                    bfstr = s[#s],
+                    utime = db.format_date(1000000)
+                }))
+                
+                line.nupd = 1
+                line.acceptlog = logdata.logid
+                line.trstr = logdata.bfstr
+                assert_error(line:update("nupd", "acceptlog", "trstr"))
+            end
+        end
+    end
+    
+    return nfile, count, ntred
 end
 
 local app = lapis.Application()
 app:enable("etlua")
 app.layout = require "views.layout"
---[[
+
 app.handle_error = function(self, err, trace)
     return { render = "error", status = 404 }
 end
-]]
+
 app:before_filter(function(self)
     local id = self.session.user_id
         

@@ -21,7 +21,7 @@
                         <div class="list-group">
                             <p class="list-group-item">
                                 第 <span class="text-danger"><%= l.lid %></span> 行
-                                <a class="btn btn-default" href="<%= url_for("log", l) %>">
+                                <a class="label label-default" href="<%= url_for("log", l) %>">
                                     <%= l.nupd %>条历史记录
                                 </a>
                             </p>
