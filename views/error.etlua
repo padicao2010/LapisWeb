@@ -2,7 +2,8 @@
             <div class="row">
                 <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
                     <h3>404</h3>
-                    <p>没有该网页，或是有错误发生。</p>
+                    <p>没有该网页，或是有错误发生:</p>
+                    <mark><%= errstr %></mark>
                 </div>
             </div>
         </div>

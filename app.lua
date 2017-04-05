@@ -167,6 +167,7 @@ app:enable("etlua")
 app.layout = require "views.layout"
 
 app.handle_error = function(self, err, trace)
+    self.errstr = err
     return { render = "error", status = 404 }
 end
 
@@ -204,6 +205,7 @@ app:get("register", "/register", function(self)
         return { redirect_to = self:url_for("index") }
     end
     
+    self.lasturl = self.req.headers["Referer"]
     self.reg = true
     return { render = "user" }
 end)
@@ -221,7 +223,7 @@ app:post("register", "/register", capture_errors(function(self)
     
     doLogin(self, user)
     
-    return { redirect_to = self:url_for("index") }
+    return { redirect_to = self.params.lasturl or self:url_for("index") }
 end))
 
 app:get("login", "/login", function(self)
@@ -229,6 +231,7 @@ app:get("login", "/login", function(self)
         return { redirect_to = self:url_for("index") }
     end
     
+    self.lasturl = self.req.headers["Referer"]
     return { render = "user" }
 end)
 
@@ -245,7 +248,7 @@ app:post("login", "/login", capture_errors(function(self)
     
     doLogin(self, user)
     
-    return { redirect_to = self:url_for("index") }
+    return { redirect_to = self.params.lasturl or self:url_for("index") }
 end))
 
 app:get("logout", "/logout", function(self)
@@ -253,7 +256,8 @@ app:get("logout", "/logout", function(self)
         doLogout(self, self.current_user)
     end
     
-    return { redirect_to = self:url_for("index") }
+    local lasturl = self.req.headers["Referer"]
+    return { redirect_to = lasturl or self:url_for("index") }
 end)
 
 app:post("new", "/project/new", capture_errors(function(self)
