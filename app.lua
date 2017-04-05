@@ -37,6 +37,9 @@ local MDict = Model:extend("tr_dict", {
 local MDictLog = Model:extend("tr_dictlog", {
     primary_key = "dlogid"
 })
+local MComment = Model:extend("tr_comment", {
+    primary_key = "cid"
+})
 
 local function analysisRenpyFile(proj, name, content, fdesc)
     local file = assert_error(MFile:create({
@@ -650,6 +653,99 @@ app:get("genupdate", "/project/p:pid/genupdate/t:time", my_capture_errors(functi
     assert_error(project:update("lastupdate"))
     
     return { redirect_to = self:url_for("download", self.params) }
+end))
+
+app:get("comment", "/project/p:pid/comments", my_capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "pid", exists = true, is_integer = true }
+    })
+    local pid = self.params.pid
+    
+    self.project = assert_error(MProject:find(pid))
+    
+    if self.admin_state then
+        self.comments = assert_error(db.select("u.uid, u.uname, c.cid, c.pid, c.utime, c.content, c.cacc, c.ctop FROM tr_comment c, tr_user u WHERE u.uid = c.uid AND c.pid = ? ORDER BY c.ctop DESC, c.utime DESC", pid))
+    else
+        self.comments = assert_error(db.select("u.uid, u.uname, c.cid, c.pid, c.utime, c.content, c.cacc, c.ctop FROM tr_comment c, tr_user u WHERE u.uid = c.uid AND c.pid = ? AND (c.cacc = 0 OR c.uid = ?) ORDER BY c.ctop DESC, c.utime DESC",
+            pid, 
+            self.current_user and self.current_user.uid or "-1"))
+    end
+    
+    return { render = true }
+end))
+
+app:post("comment", "/project/p:pid/comments", my_capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "pid", exists = true, is_integer = true },
+        { "content", exists = true, max_length = 256 },
+    })
+    
+    assert_error(self.current_user, "留言必须登录！")
+    
+    local pid = self.params.pid
+    local project = assert_error(MProject:find(pid))
+    local acc = (self.params.access and self.params.access == "private") and 1 or 0
+    local top = (self.admin_state and self.params.top and self.params.top == "top") and 1 or 0
+    
+    assert_error(MComment:create({
+        pid = pid,
+        uid = self.current_user.uid,
+        content = self.params.content,
+        cacc = acc,
+        ctop = top
+    }))
+   
+    return { redirect_to = self:url_for("comment", self.params) }
+end))
+
+app:get("delcom", "/project/p:pid/comment/c:cid", my_capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "pid", exists = true, is_integer = true },
+        { "cid", exists = true, is_integer = true },
+    })
+    
+    assert_error(self.current_user, "删除留言必须登录！")
+    
+    local comment = assert_error(MComment:find(self.params.cid))
+    
+    assert_error(self.admin_state or comment.uid == self.current_user.uid, "非管理员不能删除其他用户的留言！")
+
+    comment:delete()
+    
+    return { redirect_to = self:url_for("comment", self.params) }
+end))
+
+app:get("swtopcom", "/project/p:pid/comment/c:cid/swtop", my_capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "pid", exists = true, is_integer = true },
+        { "cid", exists = true, is_integer = true },
+    })
+    
+    assert_error(self.admin_state, "修改留言置顶需要管理员权限！")
+    
+    local comment = assert_error(MComment:find(self.params.cid))
+    comment.ctop = 1 - comment.ctop
+    comment:update("ctop")
+    
+    return { redirect_to = self:url_for("comment", self.params) }
+end))
+
+app:get("swprivcom", "/project/p:pid/comment/c:cid/swpriv", my_capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "pid", exists = true, is_integer = true },
+        { "cid", exists = true, is_integer = true },
+    })
+    
+    assert_error(self.current_user, "修改留言可见性必须登录！")
+    
+    local comment = assert_error(MComment:find(self.params.cid))
+    
+    assert_error(self.admin_state or comment.uid == self.current_user.uid, "非管理员不能修改其他用户的留言的可见性！")
+
+    comment.cacc = 1 - comment.cacc
+    comment:update("cacc")
+    
+    return { redirect_to = self:url_for("comment", self.params) }
 end))
 
 return app

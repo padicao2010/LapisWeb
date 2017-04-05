@@ -13,6 +13,7 @@
                         <li role="presentation"><a href="<%= url_for("project", project) %>">文件列表</a></li>
                         <li role="presentation"><a href="<%= url_for("dict", project) %>">词典</a></li>
                         <li role="presentation" class="active"><a href="#">下载</a></li>
+                        <li role="presentation"><a href="<%= url_for("comment", project) %>">留言</a></li>
                     </ul>
                     <p>
                         共 <span class="text-warning"><%= #files %></span> 文件，

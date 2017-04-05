@@ -78,3 +78,16 @@ CREATE TABLE tr_dictlog(
   FOREIGN KEY(uid) REFERENCES tr_user(uid),
   FOREIGN KEY(did) REFERENCES tr_dict(did)
 );
+
+CREATE TABLE tr_comment(
+  cid INT NOT NULL AUTO_INCREMENT,
+  pid INT NOT NULL,
+  uid INT NOT NULL,
+  utime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  content VARCHAR(256) NOT NULL,
+  cacc TINYINT default 0,
+  ctop TINYINT default 0,
+  PRIMARY KEY(cid),
+  FOREIGN KEY(pid) REFERENCES tr_project(pid),
+  FOREIGN KEY(uid) REFERENCES tr_user(uid)
+);
