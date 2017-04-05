@@ -9,17 +9,12 @@
                     <p><%= project.pdesc %></p>
                 </div>
                 <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+                    <ul class="nav nav-tabs">
+                        <li role="presentation"><a href="<%= url_for("project", project) %>">文件列表</a></li>
+                        <li role="presentation"><a href="<%= url_for("dict", project) %>">词典</a></li>
+                        <li role="presentation" class="active"><a href="#">下载</a></li>
+                    </ul>
                     <p>
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                下载 <span class="caret"></span>
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li><a href="<%= url_for("project", project) %>">文件列表</a></li>
-                                <li><a href="<%= url_for("dict", project) %>">词典</a></li>
-                                <li class="active"><a href="#">下载</a></li>
-                            </ul>
-                        </div>
                         共 <span class="text-warning"><%= #files %></span> 文件，
                         最近生成更新时间：<span class="text-warning"><%= project.lastupdate %></span>
                         <% if admin_state then %>
