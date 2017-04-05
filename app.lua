@@ -167,8 +167,18 @@ app:enable("etlua")
 app.layout = require "views.layout"
 
 app.handle_error = function(self, err, trace)
-    self.errstr = err
+    self.errstr = "无此访问路径！"
     return { render = "error", status = 404 }
+end
+
+local function my_capture_errors(func)
+    return capture_errors({
+        on_error = function(self)
+            self.errstr = self.errors[1]
+            return { render = "error", status = 404 }
+        end, 
+        func
+    })
 end
 
 app:before_filter(function(self)
@@ -219,7 +229,7 @@ app:post("register", "/register", capture_errors(function(self)
     local user = assert_error(MUser:create({
         uname = self.params.username,
         upasswd = encoding.encode_base64(encoding.hmac_sha1(config.secret, self.params.password))
-    }))
+    }), "用户名已存在！")
     
     doLogin(self, user)
     
@@ -235,7 +245,7 @@ app:get("login", "/login", function(self)
     return { render = "user" }
 end)
 
-app:post("login", "/login", capture_errors(function(self)
+app:post("login", "/login", my_capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "username", exists = true },
         { "password", exists = true }
@@ -244,7 +254,7 @@ app:post("login", "/login", capture_errors(function(self)
     local user = assert_error(MUser:find({
         uname = self.username,
         upasswd = encoding.encode_base64(encoding.hmac_sha1(config.secret, self.params.password)),
-    }))
+    }), "用户名不存在或密码不正确！")
     
     doLogin(self, user)
     
@@ -260,7 +270,7 @@ app:get("logout", "/logout", function(self)
     return { redirect_to = lasturl or self:url_for("index") }
 end)
 
-app:post("new", "/project/new", capture_errors(function(self)
+app:post("new", "/project/new", my_capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "name", exists = true, min_length = 1, max_length = 44 },
         { "desc", exists = true, min_length = 1, max_length = 254 },
@@ -274,7 +284,7 @@ app:post("new", "/project/new", capture_errors(function(self)
     return { redirect_to = self:url_for("index") }
 end))
 
-app:get("project", "/project/p:pid/files(/page:pageid)", capture_errors(function(self)
+app:get("project", "/project/p:pid/files(/page:pageid)", my_capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
     })
@@ -288,7 +298,7 @@ app:get("project", "/project/p:pid/files(/page:pageid)", capture_errors(function
     return { render = true }
 end))
 
-app:post("project", "/project/p:pid/files(/page:pageid)", capture_errors(function(self)
+app:post("project", "/project/p:pid/files(/page:pageid)", my_capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
         { "type", exists = true },
@@ -322,7 +332,7 @@ app:post("project", "/project/p:pid/files(/page:pageid)", capture_errors(functio
     return { redirect_to = self:url_for("project", self.params) }
 end))
 
-app:get("file", "/project/p:pid/file/f:fid(/page:pageid)", capture_errors(function(self)
+app:get("file", "/project/p:pid/file/f:fid(/page:pageid)", my_capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
         { "fid", exists = true, is_integer = true },
@@ -369,7 +379,7 @@ app:get("file", "/project/p:pid/file/f:fid(/page:pageid)", capture_errors(functi
     return { render = true }
 end))
 
-app:post("file", "/project/p:pid/file/f:fid(/page:pageid)", capture_errors(function(self)
+app:post("file", "/project/p:pid/file/f:fid(/page:pageid)", my_capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
         { "fid", exists = true, is_integer = true },
@@ -427,7 +437,7 @@ app:post("file", "/project/p:pid/file/f:fid(/page:pageid)", capture_errors(funct
     return { redirect_to = self:url_for("file", t) }
 end))
 
-app:get("log", "/project/p:pid/file/f:fid/line/l:lid", capture_errors(function(self)
+app:get("log", "/project/p:pid/file/f:fid/line/l:lid", my_capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
         { "fid", exists = true, is_integer = true },
@@ -448,7 +458,7 @@ app:get("log", "/project/p:pid/file/f:fid/line/l:lid", capture_errors(function(s
     return { render = true }
 end))
 
-app:get("setlog", "/project/p:pid/file/f:fid/line/l:lid/set/log:logid", capture_errors(function(self)
+app:get("setlog", "/project/p:pid/file/f:fid/line/l:lid/set/log:logid", my_capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
         { "fid", exists = true, is_integer = true },
@@ -466,7 +476,7 @@ app:get("setlog", "/project/p:pid/file/f:fid/line/l:lid/set/log:logid", capture_
     return { redirect_to = self:url_for("log", self.params) }
 end))
 
-app:get("dict", "/project/p:pid/dicts", capture_errors(function(self)
+app:get("dict", "/project/p:pid/dicts", my_capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true }
     })
@@ -481,7 +491,7 @@ app:get("dict", "/project/p:pid/dicts", capture_errors(function(self)
     return { render = true }
 end))
 
-app:post("dict", "/project/p:pid/dicts", capture_errors(function(self)
+app:post("dict", "/project/p:pid/dicts", my_capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
         { "sourceword", exists = true, max_length = 60 },
@@ -514,7 +524,7 @@ app:post("dict", "/project/p:pid/dicts", capture_errors(function(self)
     return { redirect_to = self:url_for("dict", self.params) }
 end))
 
-app:get("dictlog", "/project/p:pid/dict/d:did", capture_errors(function(self)
+app:get("dictlog", "/project/p:pid/dict/d:did", my_capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
         { "did", exists = true, is_integer = true },
@@ -531,7 +541,7 @@ app:get("dictlog", "/project/p:pid/dict/d:did", capture_errors(function(self)
     return { render = true }
 end))
 
-app:get("setdictlog", "/project/p:pid/dict/d:did/set/dl:dlogid", capture_errors(function(self)
+app:get("setdictlog", "/project/p:pid/dict/d:did/set/dl:dlogid", my_capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
         { "did", exists = true, is_integer = true },
@@ -549,7 +559,7 @@ app:get("setdictlog", "/project/p:pid/dict/d:did/set/dl:dlogid", capture_errors(
     return { redirect_to = self:url_for("dictlog", self.params) }
 end)) 
 
-app:get("download", "/project/p:pid/downloads", capture_errors(function(self)
+app:get("download", "/project/p:pid/downloads", my_capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true }
     })
@@ -572,7 +582,7 @@ app:get("download", "/project/p:pid/downloads", capture_errors(function(self)
     return { render = true }
 end))
 
-app:get("checklines", "/project/p:pid/checklines", capture_errors(function(self)
+app:get("checklines", "/project/p:pid/checklines", my_capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true }
     })
@@ -594,7 +604,7 @@ app:get("checklines", "/project/p:pid/checklines", capture_errors(function(self)
     return { render = true }
 end))
 
-app:get("checkdicts", "/project/p:pid/checkdicts(/t:time)", capture_errors(function(self)
+app:get("checkdicts", "/project/p:pid/checkdicts(/t:time)", my_capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true }
     })
@@ -616,7 +626,7 @@ app:get("checkdicts", "/project/p:pid/checkdicts(/t:time)", capture_errors(funct
     return { render = true }
 end))
 
-app:get("genupdate", "/project/p:pid/genupdate/t:time", capture_errors(function(self)
+app:get("genupdate", "/project/p:pid/genupdate/t:time", my_capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true }
     })
