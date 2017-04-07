@@ -61,7 +61,9 @@
                             <tr>
                                 <td><%= d.sstr %></td>
                                 <td><%= d.dstr %></td>
-                                <td><a href="<%= url_for("dictlog", d) %>">历史记录</a></td>
+                                <td><a href="<%= url_for("dictlog", d) %>">
+                                    <i class="fa fa-history"></i> 历史记录
+                                </a></td>
                             </tr>
                             <% end %>
                         </tbody>
