@@ -83,19 +83,19 @@
 
                     <ul class="pagination text-center" role="navigation" aria-label="Pagination">
                         <% if pageIndex > 1 then %>
-                            <li><a href="<%= url_for('project', { pid=project.pid, pageIndex=1 }) %>">1</a></li>
+                            <li><a href="<%= url_for('project', { pid=project.pid, pageid=1 }) %>">1</a></li>
                         <% end %>
                         <% if pageIndex > 2 then %>
                             <li class="ellipsis"></li>
                         <% end %>
                         <% if pageIndex >= 2 then %>
-                            <li><a href="<%= url_for('project', {pid = project.pid, pageIndex = pageIndex - 1}) %>">
+                            <li><a href="<%= url_for('project', {pid = project.pid, pageid = pageIndex - 1}) %>">
                                 <%= pageIndex - 1 %></a>
                             </li>
                         <% end %>
                         <li class="current"><%= pageIndex %></li>
                         <% if pageCount - pageIndex > 0 then %>
-                            <li><a href="<%= url_for('project', {pid = project.pid, pageIndex = pageIndex + 1}) %>">
+                            <li><a href="<%= url_for('project', {pid = project.pid, pageid = pageIndex + 1}) %>">
                                 <%= pageIndex + 1 %></a>
                             </li>
                         <% end %>
@@ -103,7 +103,7 @@
                             <li class="ellipsis"></li>
                         <% end %>
                         <% if pageCount - pageIndex > 1 then %>
-                            <li><a href="<%= url_for('project', { pid=project.pid, pageIndex=pageCount }) %>">
+                            <li><a href="<%= url_for('project', { pid=project.pid, pageid=pageCount }) %>">
                                 <%= pageCount %></a>
                             </li>
                         <% end %>

@@ -5,3 +5,9 @@
 .sub-bar {
     padding: 0.4rem;
 }
+
+pre{
+    white-space:pre-wrap;
+    word-break:normal;
+}
+

@@ -1,63 +1,93 @@
-        <div class="container">
+        <div class="content">
             <div class="row">
-                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+                <div class="small-12 small-centered medium-8 columns">
                     <h3><a href="<%= url_for("index") %>">
-                            <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
+                            <i class="fa fa-home"></i>
                         </a> /
                         <a href="<%= url_for("project", project) %>">
                             <%= project.pname %>
                         </a> /
                         <%= file.fname %>
                     </h3>
-                    <p><%= file.fdesc %></p>
+                    <pre><%= file.fdesc %></pre>
                     <p>
-                        共 <span class="text-warning"><%= file.fline %></span> 行，
-                        已翻译 <span class="text-warning"><%= file.ntred %></span> 行，
-                        共 <span class="text-warning"><%= pageCount %></span> 页，
-                        第 <span class="text-warning"><%= pageIndex %></span> 页
+                        共 <strong><%= file.fline %></strong> 行，
+                        已翻译 <strong><%= file.ntred %></strong> 行，
+                        共 <strong><%= pageCount %></strong> 页，
+                        第 <strong><%= pageIndex %></strong> 页
                     </p>
+                </div>
+                
+                <div class="small-12 small-centered medium-8 columns">
                     <form method='post'>
                         <% for _, l in ipairs(lines) do %>
-                        <div class="list-group">
-                            <p class="list-group-item">
-                                第 <span class="text-danger"><%= l.lid %></span> 行
-                                <a class="label label-default" href="<%= url_for("log", l) %>">
-                                    <%= l.nupd %>条历史记录
+                        <div class="callout">
+                            <p>
+                                第 <strong><%= l.lid %></strong> 行
+                                <a class="label secondary" href="<%= url_for("log", l) %>">
+                                    <%= l.nupd %> 条历史记录
                                 </a>
                             </p>
-                            <p class="list-group-item"><%= l.ldesc %></p>
-                            <pre class="list-group-item"><%= l.orgstr %></pre>
+                            <p><%= l.ldesc %></p>
+                            <pre><%= l.orgstr %></pre>
                             <% if current_user then %>
-                            <textarea class="list-group-item form-control" name="line<%= l.lid %>" rows="3"><%= l.trstr %></textarea>
+                            <textarea name="line<%= l.lid %>" rows="3"><%= l.trstr %></textarea>
                             <% else %>
-                            <pre class="list-group-item"><%= l.trstr %></pre>
+                            <pre><%= l.trstr %></pre>
                             <% end %>
                         </div>
                         <% end %>
                         <% if current_user then %>
-                            <button type="submit" class="btn btn-primary">提交更改并继续</button>
+                            <button type="submit" class="button">提交更改并继续</button>
                         <% end %>
                     </form>
-                    <nav aria-label="...">
-                      <ul class="pager">
-                        <li class="<%= prevf and '' or 'disabled' %>">
-                            <a href="<%= prevf and url_for('file', prevf) or '#' %>">
-                                上个文件
+
+                    <ul class="pagination text-center" role="navigation">
+                        <% if pageIndex > 1 then %>
+                        <li><a href="<%= url_for('file', { pid=project.pid, fid=file.fid, pageid=1 }) %>">1</a></li>
+                        <% end %>
+                        
+                        <% if pageIndex > 3 then %>
+                        <li class="ellipsis"></li>
+                        <% end %>
+                        
+                        <% if pageIndex > 2 then %>
+                        <li><a href="<%= url_for('file', {pid=project.pid, fid=file.fid, pageid= pageIndex - 1}) %>">
+                            <%= pageIndex - 1 %></a>
+                        </li>
+                        <% end %>
+                        
+                        <li class="current"><%= pageIndex %></li>
+                        
+                        <% if pageCount - pageIndex > 0 then %>
+                        <li><a href="<%= url_for('file', {pid=project.pid, fid=file.fid, pageid= pageIndex + 1}) %>">
+                            <%= pageIndex + 1 %></a>
+                        </li>
+                        <% end %>
+                        
+                        <% if pageCount - pageIndex > 2 then %>
+                        <li class="ellipsis"></li>
+                        <% end %>
+                        
+                        <% if pageCount - pageIndex > 1 then %>
+                        <li><a href="<%= url_for('file', { pid=project.pid, fid=file.fid, pageid=pageCount }) %>">
+                            <%= pageCount %></a>
+                        </li>
+                        <% end %>
+                        
+                        <% if prevf then %>
+                        <li><a href="<%= url_for('file', prevf) %>">
+                            上一个文件
                             </a>
                         </li>
-                        <li class="<%= pageIndex<=1 and 'disabled' or '' %>"><a href="<%= pageIndex>1 and url_for('file', { pid=file.pid,fid=file.fid,pageid=pageIndex-1 }) or '#' %>">
-                            上一页
-                        </a></li>
-                        <li class="<%= pageIndex>=pageCount and 'disabled' or '' %>"><a href="<%= pageIndex<pageCount and url_for('file', { pid=file.pid,fid=file.fid,pageid=pageIndex+1 }) or '#' %>">
-                            下一页
-                        </a></li>
-                        <li class="<%= nextf and '' or 'disabled' %>">
-                            <a href="<%= nextf and url_for('file', nextf) or '#' %>">
-                                下个文件
-                            </a>
+                        <% end %>
+                        
+                        <% if nextf then %>
+                        <li><a href="<%= url_for('file', nextf) %>">
+                            下一个文件</a>
                         </li>
-                      </ul>
-                    </nav>
+                        <% end %>
+                    </ul>
                 </div>
             </div>
         </div>
