@@ -38,56 +38,51 @@
                         </div>
                         <% end %>
                         <% if current_user then %>
-                            <button type="submit" class="button">提交更改并继续</button>
+                        <button type="submit" class="button small">提交更改并继续</button>
                         <% end %>
                     </form>
 
-                    <ul class="pagination text-center" role="navigation">
+                    <div class="small button-group text-center">
+                        <a class="button" href="<%= prevf and url_for('file', prevf) or '#' %>" <%= prevf and '' or 'disabled' %>>
+                            上一个文件
+                        </a>
+                        
                         <% if pageIndex > 1 then %>
-                        <li><a href="<%= url_for('file', { pid=project.pid, fid=file.fid, pageid=1 }) %>">1</a></li>
+                        <a class="button" href="<%= url_for('file', { pid=project.pid, fid=file.fid, pageid=1 }) %>">1</a>
                         <% end %>
                         
                         <% if pageIndex > 3 then %>
-                        <li class="ellipsis"></li>
+                        <a class="button" href="#">...</a>
                         <% end %>
                         
                         <% if pageIndex > 2 then %>
-                        <li><a href="<%= url_for('file', {pid=project.pid, fid=file.fid, pageid= pageIndex - 1}) %>">
-                            <%= pageIndex - 1 %></a>
-                        </li>
+                        <a class="button" href="<%= url_for('file', {pid=project.pid, fid=file.fid, pageid= pageIndex - 1}) %>">
+                            <%= pageIndex - 1 %>
+                        </a>
                         <% end %>
                         
-                        <li class="current"><%= pageIndex %></li>
+                        <a class="button alert" href="#"><%= pageIndex %></a>
                         
                         <% if pageCount - pageIndex > 0 then %>
-                        <li><a href="<%= url_for('file', {pid=project.pid, fid=file.fid, pageid= pageIndex + 1}) %>">
-                            <%= pageIndex + 1 %></a>
-                        </li>
+                        <a class="button" href="<%= url_for('file', {pid=project.pid, fid=file.fid, pageid= pageIndex + 1}) %>">
+                            <%= pageIndex + 1 %>
+                        </a>
                         <% end %>
                         
                         <% if pageCount - pageIndex > 2 then %>
-                        <li class="ellipsis"></li>
+                        <a class="button" href="#">...</a>
                         <% end %>
                         
                         <% if pageCount - pageIndex > 1 then %>
-                        <li><a href="<%= url_for('file', { pid=project.pid, fid=file.fid, pageid=pageCount }) %>">
-                            <%= pageCount %></a>
-                        </li>
+                        <a class="button" href="<%= url_for('file', { pid=project.pid, fid=file.fid, pageid=pageCount }) %>">
+                            <%= pageCount %>
+                        </a>
                         <% end %>
                         
-                        <% if prevf then %>
-                        <li><a href="<%= url_for('file', prevf) %>">
-                            上一个文件
-                            </a>
-                        </li>
-                        <% end %>
-                        
-                        <% if nextf then %>
-                        <li><a href="<%= url_for('file', nextf) %>">
-                            下一个文件</a>
-                        </li>
-                        <% end %>
-                    </ul>
+                        <a class="button" href="<%= nextf and url_for('file', nextf) or '#' %>" <%= nextf and '' or 'disabled' %>>
+                            下一个文件
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

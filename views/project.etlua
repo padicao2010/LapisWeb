@@ -81,33 +81,41 @@
                     </div>
                     <% end %>
 
-                    <ul class="pagination text-center" role="navigation" aria-label="Pagination">
+                    <% if pageCount > 1 then %>
+                    <div class="small button-group text-center">
                         <% if pageIndex > 1 then %>
-                            <li><a href="<%= url_for('project', { pid=project.pid, pageid=1 }) %>">1</a></li>
+                        <a class="button" href="<%= url_for('project', { pid=project.pid, pageid=1 }) %>">1</a>
                         <% end %>
-                        <% if pageIndex > 2 then %>
-                            <li class="ellipsis"></li>
+                        
+                        <% if pageIndex > 3 then %>
+                        <a class="button" href="#">...</a>
                         <% end %>
+                        
                         <% if pageIndex >= 2 then %>
-                            <li><a href="<%= url_for('project', {pid = project.pid, pageid = pageIndex - 1}) %>">
-                                <%= pageIndex - 1 %></a>
-                            </li>
+                        <a class="button" href="<%= url_for('project', {pid = project.pid, pageid = pageIndex - 1}) %>">
+                            <%= pageIndex - 1 %>
+                        </a>    
                         <% end %>
-                        <li class="current"><%= pageIndex %></li>
+                        
+                        <a class="button alert" href="#"><%= pageIndex %></a>
+                        
                         <% if pageCount - pageIndex > 0 then %>
-                            <li><a href="<%= url_for('project', {pid = project.pid, pageid = pageIndex + 1}) %>">
-                                <%= pageIndex + 1 %></a>
-                            </li>
+                        <a class="button" href="<%= url_for('project', {pid = project.pid, pageid = pageIndex + 1}) %>">
+                            <%= pageIndex + 1 %>
+                        </a>
                         <% end %>
+                        
                         <% if pageCount - pageIndex > 2 then %>
-                            <li class="ellipsis"></li>
+                        <a class="button" href="#">...</a>
                         <% end %>
+                        
                         <% if pageCount - pageIndex > 1 then %>
-                            <li><a href="<%= url_for('project', { pid=project.pid, pageid=pageCount }) %>">
-                                <%= pageCount %></a>
-                            </li>
+                        <a class="button" href="<%= url_for('project', { pid=project.pid, pageid=pageCount }) %>">
+                            <%= pageCount %>
+                        </a>
                         <% end %>
-                    </ul>
+                    </div>
+                    <% end %>
                 </div>
             </div>
         </div>
