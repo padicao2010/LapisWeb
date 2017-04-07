@@ -16,7 +16,7 @@
                 <div class="small-12 small-centered large-10 columns">
                     <div class="float-left">
                         <ul class="menu">
-                            <li class="menu-text"><a href="<%= url_for('index') %>">捭阖翻翻翻<a></li>
+                            <li class="menu-text">捭阖翻翻翻</li>
                         </ul>
                     </div>
 

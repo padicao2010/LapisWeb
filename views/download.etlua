@@ -1,37 +1,39 @@
-        <div class="container">
+        <div class="content">
             <div class="row">
-                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+                <div class="small-10 small-centered medium-8 columns">
                     <h3><a href="<%= url_for("index") %>">
-                            <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
+                            <i class="fa fa-home"></i>
                         </a> /
                         <%= project.pname %>
                     </h3>
-                    <p><%= project.pdesc %></p>
+                    <pre><%= project.pdesc %></pre>
                 </div>
-                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
-                    <ul class="nav nav-tabs">
-                        <li role="presentation"><a href="<%= url_for("project", project) %>">文件列表</a></li>
-                        <li role="presentation"><a href="<%= url_for("dict", project) %>">词典</a></li>
-                        <li role="presentation" class="active"><a href="#">下载</a></li>
-                        <li role="presentation"><a href="<%= url_for("comment", project) %>">留言</a></li>
-                    </ul>
-                    <p>
-                        共 <span class="text-warning"><%= #files %></span> 文件，
-                        最近生成更新时间：<span class="text-warning"><%= project.lastupdate %></span>
+                <div class="small-10 small-centered medium-8 columns">
+                    <div class="sub-bar menu-centered">
+                        <ul class="menu">
+                            <li><a href="<%= url_for("project", project) %>">文件列表</a></li>
+                            <li><a href="<%= url_for("dict", project) %>">词典</a></li>
+                            <li class="active"><a href="#">下载</a></li>
+                            <li><a href="<%= url_for("comment", project) %>">留言</a></li>
+                        </ul>
+                    </div>
+                    <p class="text-center">
+                        共 <strong><%= #files %></strong> 文件，
+                        最近生成更新时间：<strong"><%= project.lastupdate %></strong>
                         <% if admin_state then %>
-                        <a class="btn btn-default" href="<%= url_for("checklines", project) %>">
-                            审查翻译
+                        <a href="<%= url_for("checklines", project) %>">
+                            <i class="fa fa-eye"></i> 审查翻译
                         </a>
-                        <a class="btn btn-default" href="<%= url_for("checkdicts", project) %>">
-                            审查词典
+                        <a href="<%= url_for("checkdicts", project) %>">
+                            <i class="fa fa-eye"></i> 审查词典
                         </a>
                         <% end %>
                     </p>
                 </div>
                     
                 <% if #files > 0 then %>
-                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
-                    <table class="table">
+                <div class="small-10 small-centered medium-8 columns">
+                    <table>
                         <thead>
                             <tr>
                                 <th>文件名</th>

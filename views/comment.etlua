@@ -1,52 +1,52 @@
-        <div class="container">
+        <div class="content">
             <div class="row">
-                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+                <div class="small-10 small-centered medium-8 columns">
                     <h3><a href="<%= url_for("index") %>">
-                            <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
+                            <i class="fa fa-home"></i>
                         </a> /
                         <%= project.pname %>
                     </h3>
-                    <p><%= project.pdesc %></p>
+                    <pre><%= project.pdesc %></pre>
                 </div>
-                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
-                    <ul class="nav nav-tabs">
-                        <li role="presentation"><a href="<%= url_for("project", project) %>">文件列表</a></li>
-                        <li role="presentation"><a href="<%= url_for("dict", project) %>">词典</a></li>
-                        <li role="presentation"><a href="<%= url_for("download", project) %>">下载</a></li>
-                        <li role="presentation" class="active"><a href="#">留言</a></li>
-                    </ul>
-                    <p>
-                        共 <%= #comments %> 条留言
+                <div class="small-10 small-centered medium-8 columns">
+                    <div class="sub-bar menu-centered">
+                        <ul class="menu">
+                            <li><a href="<%= url_for("project", project) %>">文件列表</a></li>
+                            <li><a href="<%= url_for("dict", project) %>">词典</a></li>
+                            <li><a href="<%= url_for("download", project) %>">下载</a></li>
+                            <li class="active"><a href="#">留言</a></li>
+                        </ul>
+                    </div>
+                    <p class="text-center">
+                        共 <strong><%= #comments %></strong> 条留言
                         <% if current_user then %>
-                        <a class="btn btn-default" data-toggle="collapse" href="#collapseupload">
-                            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                        <a data-toggle="collapseupload">
+                            <i class="fa fa-plus"></i>
                         </a>
                         <% end %>
                     </p>
                     <% if current_user then %>
-                    <div id="collapseupload" class="collapse">
+                    <div id="collapseupload" class="hide" data-toggler=".hide">
                         <form method="post">
-                            <div class="form-group">
-                                <label class="col-sm-2 control-label text-right" for="msgContent">留言</label>
-                                <div class="col-sm-10">
-                                    <textarea class="form-control" id="msgContent" name="content" rows="4" placeholder="少于256字母"></textarea>
+                            <div class="row">
+                                <div class="small-2 columns">
+                                    <label class="text-right" for="msgContent">留言 *</label>
                                 </div>
-                            </div>
-                            <div class="col-sm-10 col-sm-offset-2">
-                                <label class="checkbox-inline">
+                                <div class="small-10 columns">
+                                    <textarea id="msgContent" name="content" rows="4" placeholder="少于256字母"></textarea>
+                                </div>
+                                <fieldset class="small-10 small-offset-2 columns">
                                     <input type="checkbox" id="inlineCheckbox1" name="access" value="private">
-                                    仅自己可见
-                                </label>
-                                <% if admin_state then %>
-                                <label class="checkbox-inline">
+                                    <label>仅自己可见</label>
+                                    
+                                    <% if admin_state then %>
                                     <input type="checkbox" id="inlineCheckbox2" name="top" value="top">
-                                    置顶
-                                </label>
+                                    <label>置顶</label>
+                                </fieldset>
                                 <% end %>
-                            </div>
-
-                            <div class="col-sm-10 col-sm-offset-2">
-                                <button type="submit" class="btn btn-default">提交</button>
+                                <div class="small-10 small-offset-2 columns">
+                                    <button type="submit" class="button">提交</button>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -54,26 +54,26 @@
                 </div>
                     
                 <% if #comments > 0 then %>
-                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+                <div class="small-10 small-centered medium-8 columns">
                     <% for _, c in ipairs(comments) do %>
-                    <div class="list-group">
-                        <p class="list-group-item">
+                    <div class="callout">
+                        <p>
                             <% if c.ctop == 1 then %>
-                            <span class="label label-danger">置顶</span>
+                            <span class="label alert">置顶</span>
                             <% end %>
                             
                             <% if c.cacc == 1 then %>
-                            <span class="label label-warning">私有</span>
+                            <span class="label warning">私有</span>
                             <% end %>
                             
-                            <span class="text-warning"><%= c.uname %></span>
+                            <strong><%= c.uname %></strong>
                             于
-                            <span class="text-warning"><%= c.utime %></span>
+                            <strong><%= c.utime %></strong>
                             发表：
                             
                             <% if admin_state then %>
                             <a href="<%= url_for("swtopcom", c) %>">
-                                <span class="glyphicon glyphicon-edit"></span>
+                                <i class="fa fa-edit"></i>
                                 <% if c.ctop == 1 then %>
                                 取消置顶
                                 <% else %>
@@ -84,7 +84,7 @@
                             
                             <% if admin_state or (current_user and current_user.uid == c.uid) then %>
                             <a href="<%= url_for("swprivcom", c) %>">
-                                <span class="glyphicon glyphicon-edit"></span>
+                                <i class="fa fa-edit"></i>
                                 <% if c.cacc == 1 then %>
                                 公开
                                 <% else %>
@@ -93,11 +93,11 @@
                             </a>
                             
                             <a href="<%= url_for("delcom", c) %>">
-                                <span class="glyphicon glyphicon-remove"></span> 删除
+                                <i class="fa fa-remove"></i> 删除
                             </a>
                             <% end %>
                         </p>
-                        <pre class="list-group-item"><%= c.content %></pre>
+                        <pre><%= c.content %></pre>
                     </div>
                     <% end %>
                 </div>

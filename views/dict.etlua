@@ -9,7 +9,7 @@
                     <pre><%= project.pdesc %></pre>
                 </div>
                 <div class="small-10 small-centered medium-8 columns">
-                    <div class="sub-bar">
+                    <div class="sub-bar menu-centered">
                         <ul class="menu">
                             <li><a href="<%= url_for("project", project) %>">文件列表</a></li>
                             <li class="active"><a href="#">词典</a></li>
@@ -17,7 +17,7 @@
                             <li><a href="<%= url_for("comment", project) %>">留言</a></li>
                         </ul>
                     </div>
-                    <p>
+                    <p class="text-center">
                         共 <span class="text-warning"><%= #dicts %></span> 项
                         <% if current_user then %>
                         <a data-toggle="collapseupload">
