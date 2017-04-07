@@ -1,61 +1,63 @@
-        <div class="container">
+        <div class="content">
             <div class="row">
-                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+                <div class="small-10 small-centered medium-8 columns">
                     <h3><a href="<%= url_for("index") %>">
-                            <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
+                            <i class="fa fa-home"></i>
                         </a> /
                         <%= project.pname %>
                     </h3>
-                    <p><%= project.pdesc %></p>
+                    <pre><%= project.pdesc %></pre>
                 </div>
-                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
-                    <ul class="nav nav-tabs">
-                        <li role="presentation" class="active"><a href="#">文件列表</a></li>
-                        <li role="presentation"><a href="<%= url_for("dict", project) %>">词典</a></li>
-                        <li role="presentation"><a href="<%= url_for("download", project) %>">下载</a></li>
-                        <li role="presentation"><a href="<%= url_for("comment", project) %>">留言</a></li>
-                    </ul>
+                <div class="small-10 small-centered medium-8 columns">
+                    <div class="sub-bar">
+                        <ul class="menu">
+                            <li class="active"><a href="#">文件列表</a></li>
+                            <li><a href="<%= url_for("dict", project) %>">词典</a></li>
+                            <li><a href="<%= url_for("download", project) %>">下载</a></li>
+                            <li><a href="<%= url_for("comment", project) %>">留言</a></li>
+                        </ul>
+                    </div>
                     <p>
-                        共 <span class="text-warning"><%= project.pline %></span> 行，
-                        已翻译 <span class="text-warning"><%= project.ntred %></span> 行，
-                        共 <span class="text-warning"><%= project.pfile %></span> 个文件，
-                        共 <span class="text-warning"><%= pageCount %></span> 页，
-                        第 <span class="text-warning"><%= pageIndex %></span> 页
+                        共 <strong><%= project.pline %></strong> 行，
+                        已翻译 <strong><%= project.ntred %></strong> 行，
+                        共 <strong><%= project.pfile %></strong> 个文件，
+                        共 <strong><%= pageCount %></strong> 页，
+                        第 <strong><%= pageIndex %></strong> 页
                         
                         <% if admin_state then %>
-                        <a class="btn btn-default" data-toggle="collapse" href="#collapseupload">
-                            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                        <a data-toggle="collapseupload">
+                            <i class="fa fa-plus"></i>
                         </a>
                         <% end %>
                     </p>
                     <% if admin_state then %>
-                    <div id="collapseupload" class="collapse">
-                        <form class="form-horizontal" method="post" enctype="multipart/form-data" >
-                            <div class="form-group">
-                                <label class="col-sm-2 control-label" for="fileUpload">选择文件</label>
-                                <div class="col-sm-10">
-                                    <input class="form-control" type="file" id="fileUpload" name="uploadfile" required="required">
+                    <div id="collapseupload" data-toggler=".hide" class="hide">
+                        <form method="post" enctype="multipart/form-data" >
+                            <div class="row">
+                                <div class="small-2 columns">
+                                    <label class="text-right" for="fileUpload">选择文件 *</label>
                                 </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-2 control-label" for="fileType">文件类型</label>
-                                <div class="col-sm-10">
-                                    <select id="fileType" name="type" required="required" class="form-control">
+                                <div class="small-10 columns">
+                                    <input type="file" id="fileUpload" name="uploadfile" required="required">
+                                </div>
+                                <div class="small-2 columns">
+                                    <label class="text-right" for="fileType">文件类型 *</label>
+                                </div>
+                                <div class="small-10 columns">
+                                    <select id="fileType" name="type" required="required">
                                         <option disabled="disabled" selected="selected"></option>
                                         <option value="renpy">Ren'py 翻译文件</option>
                                         <option value="lua">Lua 文件</option>
                                     </select>
                                 </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-2 control-label" for="fileDesc">描述</label>
-                                <div class="col-sm-10">
-                                    <textarea class="form-control" id="fileDesc" name="desc" rows="4" placeholder="少于256字母"></textarea>
+                                <div class="small-2 columns">
+                                    <label class="text-right" for="fileDesc">描述</label>
                                 </div>
-                            </div>
-                            <div class="form-group">
-                                <div class="col-sm-offset-2 col-sm-10">
-                                    <button type="submit" class="btn btn-default">上传</button>
+                                <div class="small-10 columns">
+                                    <textarea id="fileDesc" name="desc" rows="4" placeholder="少于256字母"></textarea>
+                                </div>
+                                <div class="small-10 small-offset-2 columns">
+                                    <button type="submit" class="button">上传</button>
                                 </div>
                             </div>
                         </form>
@@ -63,32 +65,49 @@
                     <% end %>
                 </div>
                     
-                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+                <div class="small-10 small-centered medium-8 columns">
                     <% for _, f in ipairs(files) do %>
-                    <div class="list-group">
-                        <a class="list-group-item" href="<%= url_for("file", f) %>">
-                            <h4>
+                    <div class="callout">
+                        <h4>
+                            <a href="<%= url_for("file", f) %>">
                                 <%= f.fname %>
-                            </h4>
-                            <p>
-                                共 <span class="text-warning"><%= f.fline %></span> 行，
-                                已翻译 <span class="text-warning"><%= f.ntred %></span> 行
-                            </p>
-                        </a>
-                        <pre class="list-group-item"><%= f.fdesc %></pre>
+                            </a>
+                        </h4>
+                        <p>
+                            共 <span class="text-warning"><%= f.fline %></span> 行，
+                            已翻译 <span class="text-warning"><%= f.ntred %></span> 行
+                        </p>
+                        <pre><%= f.fdesc %></pre>
                     </div>
                     <% end %>
 
-                    <nav aria-label="...">
-                      <ul class="pager">
-                        <li class="<%= pageIndex<=1 and 'disabled' or '' %>"><a href="<%= pageIndex>1 and url_for('project', { pid=project.pid,pageid=pageIndex-1 }) or '#' %>">
-                            上一页
-                        </a></li>
-                        <li class="<%= pageIndex>=pageCount and 'disabled' or '' %>"><a href="<%= pageIndex<pageCount and url_for('project', { pid=project.pid,pageid=pageIndex+1 }) or '#' %>">
-                            下一页
-                        </a></li>
-                      </ul>
-                    </nav>
+                    <ul class="pagination text-center" role="navigation" aria-label="Pagination">
+                        <% if pageIndex > 1 then %>
+                            <li><a href="<%= url_for('project', { pid=project.pid, pageIndex=1 }) %>">1</a></li>
+                        <% end %>
+                        <% if pageIndex > 2 then %>
+                            <li class="ellipsis"></li>
+                        <% end %>
+                        <% if pageIndex >= 2 then %>
+                            <li><a href="<%= url_for('project', {pid = project.pid, pageIndex = pageIndex - 1}) %>">
+                                <%= pageIndex - 1 %></a>
+                            </li>
+                        <% end %>
+                        <li class="current"><%= pageIndex %></li>
+                        <% if pageCount - pageIndex > 0 then %>
+                            <li><a href="<%= url_for('project', {pid = project.pid, pageIndex = pageIndex + 1}) %>">
+                                <%= pageIndex + 1 %></a>
+                            </li>
+                        <% end %>
+                        <% if pageCount - pageIndex > 2 then %>
+                            <li class="ellipsis"></li>
+                        <% end %>
+                        <% if pageCount - pageIndex > 1 then %>
+                            <li><a href="<%= url_for('project', { pid=project.pid, pageIndex=pageCount }) %>">
+                                <%= pageCount %></a>
+                            </li>
+                        <% end %>
+                    </ul>
                 </div>
             </div>
         </div>

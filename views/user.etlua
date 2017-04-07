@@ -1,20 +1,25 @@
-        <div class="container">
+        <div class="content">
             <div class="row">
-                <div class="col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3">
+                <div class="small-10 small-centered medium-8 large-6 columns">
                     <form method="post">
                         <h3 class="text-center"><%= reg and "注册" or "登录" %></h3>
                         <input type="hidden" name="lasturl" value="<%= lasturl or url_for("index") %>">
-                        <div class="form-group">
-                            <label for="inputUser">用户名</label>
-                            <input type="text" class="form-control" id="inputUser" name="username" placeholder="（少于24个字母）" required="required">
-                        </div>
-                        <div class="form-group">
-                            <label for="inputPass">密码</label>
-                            <input type="password" class="form-control" id="inputPass" name="password" placeholder="（少于24个字母）" required="required">
-                        </div>
-                        <div class="form-group">
-                            <label for="inputCommit"></label>
-                            <button type="submit" id="inputCommit" class="btn btn-default">提交</button>
+                        <div class="row">
+                            <div class="small-2 columns">
+                                <label for="inputUser">用户名 *</label>
+                            </div>
+                            <div class="small-10 columns">
+                                <input type="text" id="inputUser" name="username" placeholder="（少于24个字母）" required="required">
+                            </div>
+                            <div class="small-2 columns">
+                                <label for="inputPass">密码 *</label>
+                            </div>
+                            <div class="small-10 columns">
+                                <input type="password" id="inputPass" name="password" placeholder="（少于24个字母）" required="required">
+                            </div>
+                            <div class="small-10 small-offset-2 columns">
+                                <button type="submit" class="button">提交</button>
+                            </div>
                         </div>
                     </form>
                 </div>
