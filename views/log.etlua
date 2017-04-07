@@ -24,9 +24,11 @@
                         <h4>
                             <strong><%= lg.uname %></strong> 于 <strong><%= lg.utime %></strong> 提交：
                             <% if line.acceptlog and line.acceptlog == lg.logid then %>
-                            <span class="label primary">当前</span>
+                            <i class="fa fa-check"></i>
                             <% elseif admin_state then %>
-                            <a class="label alert" href="<%= url_for("setlog", lg) %>">设为当前</a>
+                            <a href="<%= url_for("setlog", lg) %>">
+                                <i class="fa fa-edit"></i> 设为当前
+                            </a>
                             <% end %>
                         </h4>
                         <pre><%= lg.bfstr %></pre>

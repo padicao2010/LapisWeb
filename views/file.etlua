@@ -25,7 +25,7 @@
                             <p>
                                 第 <strong><%= l.lid %></strong> 行
                                 <a href="<%= url_for("log", l) %>">
-                                    <%= l.nupd %> 条历史记录
+                                    <%= l.nupd %> 条历史记录 <i class="fa fa-history"></i>
                                 </a>
                             </p>
                             <p><%= l.ldesc %></p>

@@ -41,9 +41,11 @@
                                 <td><%= dl.utime %></td>
                                 <td>
                                     <% if dict.acceptlog and dict.acceptlog == dl.dlogid then %>
-                                    <span class="label primary">当前</span>
+                                    <i class="fa fa-check"></i>
                                     <% elseif admin_state then %>
-                                    <a class="label alert" href="<%= url_for("setdictlog", dl) %>">设为当前</a>
+                                    <a href="<%= url_for("setdictlog", dl) %>">
+                                        <i class="fa fa-edit"></i> 设为当前
+                                    </a>
                                     <% end %>
                                 </td>
                             </tr>
