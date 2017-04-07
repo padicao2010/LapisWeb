@@ -16,38 +16,30 @@
     <body>
         <nav class="navbar navbar-default navbar-static-top" role="navigation">
             <div class="container">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".bs-navbar-collapse-1">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
+                <div class="navbar-header pull-left">
                     <a class="navbar-brand" href="<%= url_for('index') %>">捭阖翻翻翻</a>
                 </div>
-                <div class="collapse navbar-collapse bs-navbar-collapse-1">
-                    <p class="navbar-text hidden-xs">钻石之心不会受伤……不也挺好吗？</p>
-                    <ul class="nav navbar-nav navbar-right">
-                        <% if current_user then %>
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" 
-                                data-toggle="dropdown" role="button" 
-                                aria-haspopup="true" aria-expanded="false">
-                                <span class="glyphicon glyphicon-user"></span> <%= current_user.uname %> <span class="caret"></span>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <% if session.last_update then %>
-                                <li><a href="<%= url_for('file', session.last_update) %>">继续上次的活动
-                                </a></li>
-                                <% end %>
-                                <li><a href="<%= url_for('logout') %>">退出</a></li>
-                            </ul>
-                        </li>
-                        <% else %>
-                        <li><a href="<%= url_for('register') %>">注册</a></li>
-                        <li><a href="<%= url_for('login') %>">登录</a></li>
-                        <% end %>
-                    </ul>
+                <p class="navbar-text hidden-xs">钻石之心不会受伤……不也挺好吗？</p>
+                <div class="navbar-header pull-right">
+                    <% if current_user then %>
+                    <div class="dropdown">
+                        <a href="#" class="dropdown-toggle btn btn-default navbar-btn" 
+                            data-toggle="dropdown" role="button" 
+                            aria-haspopup="true" aria-expanded="false">
+                            <span class="glyphicon glyphicon-user"></span> <%= current_user.uname %> <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <% if session.last_update then %>
+                            <li><a href="<%= url_for('file', session.last_update) %>">继续上次的活动
+                            </a></li>
+                            <% end %>
+                            <li><a href="<%= url_for('logout') %>">退出</a></li>
+                        </ul>
+                    </div>
+                    <% else %>
+                    <a class="btn btn-default navbar-btn" href="<%= url_for('register') %>" role="button">注册</a>
+                    <a class="btn btn-default navbar-btn" href="<%= url_for('login') %>" role="button">登录</a>
+                    <% end %>
                 </div>
             </div>
         </nav>
