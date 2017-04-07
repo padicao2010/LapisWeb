@@ -4,42 +4,48 @@
         <meta charset="utf-8">
         <title>捭阖翻翻翻</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="/static/css/font-awesome.min.css">
         <link href="/static/css/foundation.min.css" rel="stylesheet">
         <link href="/static/css/app.css" rel="stylesheet">
         <link rel="shortcut icon" href="/favicon.ico">
     </head>
     <body>
+
         <div class="top-bar">
-            <div class="top-bar-title">
-                <strong>捭阖翻翻翻</strong>
-            </div>
-            <div class="top-bar-left show-for-medium">
-                <ul class="menu">
-                    <li>钻石之心不会受伤……不也挺好吗？</li>
-                </ul>
-            </div>
-            <div class="top-bar-right">
-                <ul class="dropdown menu" data-dropdown-menu>
-                    <% if current_user then %>
-                    <li>
-                        <a href="#"><%= current_user.uname %></a>
-                        <ul class="menu vertical">
-                            <% if session.last_update then %>
-                            <li><a href="<%= url_for('file', session.last_update) %>">继续上次的活动
-                            </a></li>
-                            <% end %>
-                            <li><a href="<%= url_for('logout') %>">退出</a></li>
+            <div class="row">
+                <div class="small-12 small-centered large-10 columns">
+                    <div class="float-left">
+                        <ul class="menu">
+                            <li class="menu-text">捭阖翻翻翻</li>
                         </ul>
-                    </li>
-                    <% else %>
-                    <li><a href="<%= url_for('register') %>">注册</a></li>
-                    <li><a href="<%= url_for('login') %>">登录</a></li>
-                    <% end %>
-                </ul>
+                    </div>
+
+                    <div class="float-right">
+                        <ul class="dropdown menu" data-dropdown-menu>
+                            <% if current_user then %>
+                            <li>
+                                <a href="#"><i class="fa fa-user"></i> <%= current_user.uname %></a>
+                                <ul class="menu vertical">
+                                    <% if session.last_update then %>
+                                    <li><a href="<%= url_for('file', session.last_update) %>">继续上次的活动
+                                    </a></li>
+                                    <% end %>
+                                    <li><a href="<%= url_for('logout') %>">退出</a></li>
+                                </ul>
+                            </li>
+                            <% else %>
+                            <li><a href="<%= url_for('register') %>">注册</a></li>
+                            <li><a href="<%= url_for('login') %>">登录</a></li>
+                            <% end %>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
         
-        <% content_for("inner") %>
+        <div class="content">
+            <% content_for("inner") %>
+        </div>
         
         <script src="/static/js/jquery.min.js"></script>
         <script src="/static/js/foundation.min.js"></script>

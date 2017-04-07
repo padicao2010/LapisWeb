@@ -1,25 +1,26 @@
         
         <div class="row">
-            <div class="small-10 small-centered medium-8 columns">
-                <h3>项目列表
+            <div class="small-10 small-centered medium-8 large-6 columns">
+                <h3 class="text-center">项目列表
                     <% if admin_state then %>
                     <a data-toggle="collapsenew">
-                        +
+                        <i class="fa fa-plus"></i>
                     </a>
                     <% end %>
                 </h3>
                 <% if admin_state then %>
-                <div id="collapsenew" data-toggler=".hide" class="callout hide">
+                <div id="collapsenew" data-toggler=".hide" class="hide">
                     <form action="<%= url_for("new") %>" method='post'>
                         <div class="row">
                             <div class="small-2 columns">
-                                <label class="middle" for="projectName">名字</label>
+                                <label for="projectName">名字 *</label>
                             </div>
                             <div class="small-10 columns">
-                                <input id="projectName" name="name" placeholder="少于24字母" required="required">
+                                <input type="text" id="projectName" name="name" placeholder="少于24字母" required="required">
                             </div>
+                            <p></p>
                             <div class="small-2 columns">
-                                <label class="middle" for="projectDesc">描述</label>
+                                <label for="projectDesc">描述</label>
                             </div>
                             <div class="small-10 columns">
                                 <textarea id="projectDesc" name="desc" rows="6" placeholder="少于256字母"></textarea>
