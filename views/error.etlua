@@ -1,9 +1,9 @@
-        <div class="container">
+        <div class="content">
             <div class="row">
-                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+                <div class="small-10 small-centered medium-8 columns">
                     <h3>404</h3>
                     <p>没有该网页，或是有错误发生:</p>
-                    <strong class="text-danger"><%= errstr %></strong>
+                    <strong><%= errstr %></strong>
                 </div>
             </div>
         </div>

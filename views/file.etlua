@@ -24,7 +24,7 @@
                         <div class="callout">
                             <p>
                                 第 <strong><%= l.lid %></strong> 行
-                                <a class="label secondary" href="<%= url_for("log", l) %>">
+                                <a href="<%= url_for("log", l) %>">
                                     <%= l.nupd %> 条历史记录
                                 </a>
                             </p>

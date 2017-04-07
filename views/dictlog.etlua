@@ -1,8 +1,8 @@
-        <div class="container">
+        <div class="content">
             <div class="row">
-                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+                <div class="small-10 small-centered medium-8 columns">
                     <h3><a href="<%= url_for("index") %>">
-                            <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
+                            <i class="fa fa-home"></i>
                         </a> /
                         <a href="<%= url_for("project", project) %>">
                             <%= project.pname %>
@@ -12,10 +12,10 @@
                         </a> /
                         <%= dict.sstr %>
                     </h3>
-                    <p>共修改 <span class="text-warning"><%= #dictlogs %></span> 次</p>
+                    <p>共修改 <strong><%= #dictlogs %></strong> 次</p>
                 </div>
-                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
-                    <table class="table">
+                <div class="small-10 small-centered medium-8 columns">
+                    <table>
                         <thead>
                             <tr>
                                 <th>类型</th>
@@ -41,9 +41,9 @@
                                 <td><%= dl.utime %></td>
                                 <td>
                                     <% if dict.acceptlog and dict.acceptlog == dl.dlogid then %>
-                                    <span class="label label-primary">当前</span>
+                                    <span class="label primary">当前</span>
                                     <% elseif admin_state then %>
-                                    <a class="btn btn-warning" href="<%= url_for("setdictlog", dl) %>">设为当前</a>
+                                    <a class="label alert" href="<%= url_for("setdictlog", dl) %>">设为当前</a>
                                     <% end %>
                                 </td>
                             </tr>
