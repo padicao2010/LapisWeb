@@ -21,19 +21,19 @@
                 <div class="small-12 small-centered medium-8 columns">
                     <form method='post'>
                         <% for _, l in ipairs(lines) do %>
-                        <div class="callout">
-                            <p>
+                        <div class="tblock">
+                            <p class="tbstyle">
                                 第 <strong><%= l.lid %></strong> 行
-                                <a href="<%= url_for("log", l) %>">
-                                    <%= l.nupd %> 条历史记录 <i class="fa fa-history"></i>
+                                <a class="label" href="<%= url_for("log", l) %>">
+                                    <i class="fa fa-history"></i> <%= l.nupd %> 条
                                 </a>
                             </p>
-                            <p><%= l.ldesc %></p>
-                            <pre><%= l.orgstr %></pre>
+                            <p class="tbstyle"><%= l.ldesc %></p>
+                            <pre class="tbstyle"><%= l.orgstr %></pre>
                             <% if current_user then %>
-                            <textarea name="line<%= l.lid %>" rows="3"><%= l.trstr %></textarea>
+                            <textarea class="tbstyle" name="line<%= l.lid %>" rows="3"><%= l.trstr %></textarea>
                             <% else %>
-                            <pre><%= l.trstr %></pre>
+                            <pre class="tbstyle"><%= l.trstr %></pre>
                             <% end %>
                         </div>
                         <% end %>

@@ -11,3 +11,13 @@ pre{
     word-break:normal;
 }
 
+.tblock{
+    margin:1rem;
+}
+
+.tbstyle{
+    border:1px solid #d4d4d4;
+    margin:0;
+    padding:0.4rem;
+}
+
