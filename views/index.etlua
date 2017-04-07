@@ -1,55 +1,54 @@
-        <div class="container">
-            <div class="row">
-                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
-                    <h3>项目列表
-                        <% if admin_state then %>
-                        <a class="btn btn-default" data-toggle="collapse" href="#collapsenew">
-                            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-                        </a>
-                        <% end %>
-                    </h3>
+        
+        <div class="row">
+            <div class="small-10 small-centered medium-8 columns">
+                <h3>项目列表
                     <% if admin_state then %>
-                    <div id="collapsenew" class="collapse">
-                        <form class="form-horizontal" action="<%= url_for("new") %>" method='post'>
-                            <div class="form-group">
-                                <label class="col-sm-2 control-label" for="projectName">名字</label>
-                                <div class="col-sm-10">
-                                    <input class="form-control" id="projectName" name="name" placeholder="少于24字母" required="required">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-2 control-label" for="projectDesc">描述</label>
-                                <div class="col-sm-10">
-                                    <textarea class="form-control" id="projectDesc" name="desc" rows="6" placeholder="少于256字母"></textarea>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <div class="col-sm-offset-2 col-sm-10">
-                                    <button type="submit" class="btn btn-default">新建项目</button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
+                    <a data-toggle="collapsenew">
+                        +
+                    </a>
                     <% end %>
-                    <hr />
+                </h3>
+                <% if admin_state then %>
+                <div id="collapsenew" data-toggler=".hide" class="callout hide">
+                    <form action="<%= url_for("new") %>" method='post'>
+                        <div class="row">
+                            <div class="small-2 columns">
+                                <label class="middle" for="projectName">名字</label>
+                            </div>
+                            <div class="small-10 columns">
+                                <input id="projectName" name="name" placeholder="少于24字母" required="required">
+                            </div>
+                            <div class="small-2 columns">
+                                <label class="middle" for="projectDesc">描述</label>
+                            </div>
+                            <div class="small-10 columns">
+                                <textarea id="projectDesc" name="desc" rows="6" placeholder="少于256字母"></textarea>
+                            </div>
+                            <div class="small-10 small-offset-2 columns">
+                                <button type="submit" class="button">新建项目</button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
+                <% end %>
+            </div>
                 
-                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
-                    <% for _, p in ipairs(projects) do %>
-                    <div class="list-group">
-                        <a class="list-group-item" href="<%= url_for("project", p) %>">
-                            <h4>
-                                <%= p.pname %>
-                            </h4>
-                            <p>
-                                共 <span class="text-warning"><%= p.pfile %></span> 个文件，
-                                共 <span class="text-warning"><%= p.pline %></span> 行，
-                                已翻译 <span class="text-warning"><%= p.ntred %></span> 行
-                            </p>
+            <div class="small-10 small-centered medium-8 columns">
+                <% for _, p in ipairs(projects) do %>
+                <div class="callout">
+                    <h4>
+                        <a href="<%= url_for("project", p) %>">
+                            <%= p.pname %>
                         </a>
-                        <pre class="list-group-item"><%= p.pdesc %></pre>
-                    </div>
-                    <% end %>
+                    </h4>
+                    <p>
+                        共 <span class="warning"><%= p.pfile %></span> 个文件，
+                        共 <span class="warning"><%= p.pline %></span> 行，
+                        已翻译 <span class="warning"><%= p.ntred %></span> 行
+                    </p>
+                    <pre><%= p.pdesc %></pre>
                 </div>
+                <% end %>
             </div>
         </div>
+        

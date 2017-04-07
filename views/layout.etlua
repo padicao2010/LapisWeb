@@ -4,55 +4,45 @@
         <meta charset="utf-8">
         <title>捭阖翻翻翻</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+        <link href="/static/css/foundation.min.css" rel="stylesheet">
+        <link href="/static/css/app.css" rel="stylesheet">
         <link rel="shortcut icon" href="/favicon.ico">
-        <style type="text/css"> 
-        pre{
-            white-space:pre-wrap;
-            word-break:normal;
-        } 
-        </style>
     </head>
     <body>
-        <nav class="navbar navbar-default navbar-static-top" role="navigation">
-            <div class="container">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".bs-navbar-collapse-1">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <a class="navbar-brand" href="<%= url_for('index') %>">捭阖翻翻翻</a>
-                </div>
-                <div class="collapse navbar-collapse bs-navbar-collapse-1">
-                    <p class="navbar-text hidden-xs">钻石之心不会受伤……不也挺好吗？</p>
-                    <ul class="nav navbar-nav navbar-right">
-                        <% if current_user then %>
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" 
-                                data-toggle="dropdown" role="button" 
-                                aria-haspopup="true" aria-expanded="false">
-                                <span class="glyphicon glyphicon-user"></span> <%= current_user.uname %> <span class="caret"></span>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <% if session.last_update then %>
-                                <li><a href="<%= url_for('file', session.last_update) %>">继续上次的活动
-                                </a></li>
-                                <% end %>
-                                <li><a href="<%= url_for('logout') %>">退出</a></li>
-                            </ul>
-                        </li>
-                        <% else %>
-                        <li><a href="<%= url_for('register') %>">注册</a></li>
-                        <li><a href="<%= url_for('login') %>">登录</a></li>
-                        <% end %>
-                    </ul>
-                </div>
+        <div class="top-bar">
+            <div class="top-bar-title">
+                <strong>捭阖翻翻翻</strong>
             </div>
-        </nav>
+            <div class="top-bar-left show-for-medium">
+                <ul class="menu">
+                    <li>钻石之心不会受伤……不也挺好吗？</li>
+                </ul>
+            </div>
+            <div class="top-bar-right">
+                <ul class="dropdown menu" data-dropdown-menu>
+                    <% if current_user then %>
+                    <li>
+                        <a href="#"><%= current_user.uname %></a>
+                        <ul class="menu vertical">
+                            <% if session.last_update then %>
+                            <li><a href="<%= url_for('file', session.last_update) %>">继续上次的活动
+                            </a></li>
+                            <% end %>
+                            <li><a href="<%= url_for('logout') %>">退出</a></li>
+                        </ul>
+                    </li>
+                    <% else %>
+                    <li><a href="<%= url_for('register') %>">注册</a></li>
+                    <li><a href="<%= url_for('login') %>">登录</a></li>
+                    <% end %>
+                </ul>
+            </div>
+        </div>
+        
         <% content_for("inner") %>
+        
         <script src="/static/js/jquery.min.js"></script>
-        <script src="/static/js/bootstrap.min.js"></script>
+        <script src="/static/js/foundation.min.js"></script>
+        <script src="/static/js/app.js"></script>
     </body>
 </html>
