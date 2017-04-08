@@ -32,6 +32,16 @@
                         <pre class="list-group-item"><%= lg.bfstr %></pre>
                     </div>
                     <% end %>
+                    <% if current_user then %>
+                    <form  class="form-horizontal" method="post">
+                        <div class="list-group">
+                            <h4 class="list-group-item">
+                                修改翻译：<button class="btn btn-default" type="submit">提交</button>
+                            </h4>
+                            <textarea class="list-group-item form-control" name="newstr" rows="3"><%= line.trstr %></textarea>
+                        </div>
+                    </form>
+                    <% end %>
                 </div>
             </div>
         </div>

@@ -40,7 +40,7 @@
                     <a class="btn btn-default navbar-btn" href="<%= url_for('register') %>" role="button">注册</a>
                     <a class="btn btn-default navbar-btn" href="<%= url_for('login') %>" role="button">登录</a>
                     <% end %>
-                    <span>&nbsp;<span>
+                    <span>&nbsp;</span>
                 </div>
             </div>
         </nav>

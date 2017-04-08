@@ -461,6 +461,45 @@ app:get("log", "/project/p:pid/file/f:fid/line/l:lid", my_capture_errors(functio
     return { render = true }
 end))
 
+app:post("log", "/project/p:pid/file/f:fid/line/l:lid", my_capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "pid", exists = true, is_integer = true },
+        { "fid", exists = true, is_integer = true },
+        { "lid", exists = true, is_integer = true },
+        { "newstr", exists = true }
+    })
+    
+    assert_error(self.current_user, "修改翻译必须登录！")
+    
+    local pid, fid, lid = self.params.pid, self.params.fid, self.params.lid
+    local newstr = self.params.newstr
+    
+    local project = assert_error(MProject:find(pid))
+    local file = assert_error(MFile:find(fid))
+    local line = assert_error(MLine:find(fid, lid))
+    local linelog = assert_error(MLog:create{
+        fid = fid,
+        lid = lid,
+        uid = self.current_user.uid,
+        bfstr = newstr
+    })
+    
+    line.trstr = newstr
+    line.nupd = line.nupd + 1
+    line.acceptlog = linelog.logid
+    assert_error(line:update("nupd", "trstr", "acceptlog"))
+    
+    if line.nupd == 1 then
+        file.ntred = file.ntred + 1
+        assert_error(file:update("ntred"))
+        
+        project.ntred = project.ntred + 1
+        assert_error(project:update("ntred"))
+    end
+    
+    return { redirect_to = self:url_for("log", self.params) }
+end))
+
 app:get("setlog", "/project/p:pid/file/f:fid/line/l:lid/set/log:logid", my_capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
