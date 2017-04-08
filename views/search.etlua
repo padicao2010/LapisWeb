@@ -1,0 +1,46 @@
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+                    <h3><a href="<%= url_for("index") %>">
+                            <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
+                        </a> /
+                        <a href="<%= url_for("download", project) %>">
+                            <%= project.pname %>
+                        </a> /
+                        搜索
+                    </h3>
+                    <p>
+                        对
+                        <span class="text-danger"><%= stype == "orgstr" and "原文" or "译文" %></span>
+                        搜索
+                        <mark><%= skey %></mark>
+                        共搜到
+                        <span class="text-danger"><%= #lines %></span>
+                        行
+                    </p>
+                </div>
+                    
+                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th width="45%">原文</th>
+                                <th width="45%">译文</th>
+                                <th width="10%">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% for _, l in ipairs(lines) do %>
+                            <tr>
+                                <td><pre><%= l.orgstr %></pre></td>
+                                <td><pre><%= l.trstr %></pre></td>
+                                <td><a href="<%= url_for("log", l) %>" target="_blank">
+                                    <span class="glyphicon glyphicon-edit"></span>
+                                </a></td>
+                            </tr>
+                            <% end %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>

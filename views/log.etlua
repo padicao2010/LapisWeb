@@ -33,7 +33,7 @@
                     </div>
                     <% end %>
                     <% if current_user then %>
-                    <form  class="form-horizontal" method="post">
+                    <form class="form-horizontal" method="post">
                         <div class="list-group">
                             <h4 class="list-group-item">
                                 修改翻译：<button class="btn btn-default" type="submit">提交</button>

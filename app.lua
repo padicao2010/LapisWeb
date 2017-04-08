@@ -787,4 +787,82 @@ app:get("swprivcom", "/project/p:pid/comment/c:cid/swpriv", my_capture_errors(fu
     return { redirect_to = self:url_for("comment", self.params) }
 end))
 
+app:get("other", "/project/p:pid/others", my_capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "pid", exists = true, is_integer = true }
+    })
+    
+    self.project = assert_error(MProject:find(self.params.pid))
+    return { render = true }
+end))
+
+app:post("search", "/project/p:pid/others/search", my_capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "pid", exists = true, is_integer = true },
+        { "searchtype", exists = true },
+        { "searchkey", exists = true}
+    })
+    
+    local pid = self.params.pid
+    self.stype = self.params.searchtype
+    self.skey = self.params.searchkey
+    
+    self.project = assert_error(MProject:find(pid))
+    
+    if self.stype == "orgstr" then
+        self.lines = assert_error(db.select("f.pid, f.fid, l.lid, l.orgstr, l.trstr FROM tr_line l, tr_file f WHERE f.pid = ? AND f.fid = l.fid AND orgstr LIKE ?", 
+            pid, "%" .. self.skey .. "%"))
+    elseif self.stype == "trstr" then
+        self.lines = assert_error(db.select("f.pid, f.fid, l.lid, l.orgstr, l.trstr FROM tr_line l, tr_file f WHERE f.pid = ? AND f.fid = l.fid AND trstr LIKE ?", 
+            pid, "%" .. self.skey .. "%"))
+    else
+        assert_error(nil, "未找到匹配的搜索类型！")
+    end
+    
+    return { render = true }
+end))
+
+app:post("replace", "/project/p:pid/others/replace", my_capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "pid", exists = true, is_integer = true },
+        { "sword", exists = true },
+        { "dword", exists = true}
+    })
+    
+    assert_error(self.admin_state, "替换操作需要管理员权限！")
+    
+    local pid = self.params.pid
+    local sword = self.params.sword
+    local dword = self.params.dword
+    
+    self.project = assert_error(MProject:find(pid))
+    
+    local lines = assert_error(db.select("f.pid, f.fid, l.lid, l.orgstr, l.trstr FROM tr_line l, tr_file f WHERE f.pid = ? AND f.fid = l.fid AND trstr LIKE ?", 
+            pid, "%" .. sword .. "%"))
+    for _, l in ipairs(lines) do
+        local line = assert_error(MLine:find(l.fid, l.lid))
+        local newstr = string.gsub(line.trstr, sword, dword)
+        
+        local linelog = assert_error(MLog:create{
+            fid = line.fid,
+            lid = line.lid,
+            uid = self.current_user.uid,
+            bfstr = newstr
+        })
+    
+        line.trstr = newstr
+        line.nupd = line.nupd + 1
+        line.acceptlog = linelog.logid
+        assert_error(line:update("nupd", "trstr", "acceptlog"))
+        
+        l.trstr = newstr
+    end
+    
+    self.lines = lines
+    self.sword = sword
+    self.dword = dword
+            
+    return { render = true }
+end))
+
 return app

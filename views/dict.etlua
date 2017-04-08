@@ -14,6 +14,7 @@
                         <li role="presentation" class="active"><a href="#">词典</a></li>
                         <li role="presentation"><a href="<%= url_for("download", project) %>">下载</a></li>
                         <li role="presentation"><a href="<%= url_for("comment", project) %>">留言</a></li>
+                        <li role="presentation"><a href="<%= url_for("other", project) %>">其他</a></li>
                     </ul>
                     <p>
                         共 <span class="text-warning"><%= #dicts %></span> 项
