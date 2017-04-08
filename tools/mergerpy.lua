@@ -1,4 +1,7 @@
-local cjson = pcall(require, "cjson") or require("json")
+local temp, cjson = pcall(require, "cjson")
+if not temp then
+    cjson = require "json"
+end
 local plfile = require "pl.file"
 
 local function getLine(content, offset)
