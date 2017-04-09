@@ -846,7 +846,7 @@ app:post("replace", "/project/p:pid/others/replace", my_capture_errors(function(
         local linelog = assert_error(MLog:create{
             fid = line.fid,
             lid = line.lid,
-            uid = self.current_user.uid,
+            uid = 1,
             bfstr = newstr
         })
     
