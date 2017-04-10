@@ -984,7 +984,7 @@ app:post("uploadupdate", "/project/p:pid/others/uploadupdate", my_capture_errors
         { "uploadfile", exists = true, is_file = true }
     })
     
-    assert_error(admin_state, "上传更新文件需要管理员权限！")
+    assert_error(self.admin_state, "上传更新文件需要管理员权限！")
     
     local pid = self.params.pid
     local uptype = self.params.uploadtype
