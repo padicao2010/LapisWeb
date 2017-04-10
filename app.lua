@@ -41,22 +41,14 @@ local MComment = Model:extend("tr_comment", {
     primary_key = "cid"
 })
 
-local function analysisRenpyFile(proj, name, content, fdesc)
-    local file = assert_error(MFile:create({
-        pid = proj.pid,
-        fname = name,
-        fdesc = fdesc,
-    }))
-    
-    local offset, line = 1, 1
-    local count, ntred = 0, 0
+local function getRenpyLine(content, offset, line, trhead)
     local stage = 1
     local srcfilename, srcfileline
-    local trhead
     local linehead
-    local orgstr, trstr
-    local hasline
+    local orgstr, trstr, lid
     local desc
+    local hasline
+    
     while true do
         local eols, eole = string.find(content, "\r?\n", offset)
         local l = string.sub(content, offset, eols and eols - 1)
@@ -84,21 +76,51 @@ local function analysisRenpyFile(proj, name, content, fdesc)
         elseif stage == 4 then
             local tempstr = string.match(l, "^" .. linehead .. "\"(.*)\"")
             if tempstr then
+                lid = line
                 trstr = tempstr
                 hasline = true
                 stage = 1
             end
         elseif stage == 6 then
             if string.match(l, "^new%s") then
+                lid = line
                 trstr = string.match(l, "\"(.*)\"")
                 hasline = true
                 stage = 1
             end
         end
         
+        if eols then
+            offset = eole + 1
+            line = line + 1
+        else
+            offset = #content + 1
+        end
+    
         if hasline then
+            return offset, lid, desc, orgstr, trstr, trhead
+        elseif not eols then
+            return nil
+        end
+    end
+end
+
+local function analysisRenpyFile(proj, name, content, fdesc)
+    local file = assert_error(MFile:create({
+        pid = proj.pid,
+        fname = name,
+        fdesc = fdesc,
+    }), "该文件已存在！")
+    
+    local offset, line = 1, 1
+    local count, ntred = 0, 0
+    local trhead
+    while true do
+        local noff, lid, desc, orgstr, trstr, ntrhead = getRenpyLine(content, offset, line, trhead)
+        
+        if noff then
             local ldata = assert_error(MLine:create({
-                lid = line,
+                lid = lid,
                 fid = file.fid,
                 ldesc = desc or "",
                 orgstr = orgstr,
@@ -120,16 +142,12 @@ local function analysisRenpyFile(proj, name, content, fdesc)
                 ntred = ntred + 1
             end
             count = count + 1
-            
-            srcfilename, srcfileline = nil, nil
-            hasline = false
-        end
-        
-        if not eols then
-            break
+                
+            offset = noff
+            line = lid + 1
+            trhead = ntrhead
         else
-            offset = eole + 1
-            line = line + 1
+            break
         end
     end
     
@@ -193,6 +211,70 @@ local function analysisLuaFile(proj, name, content, fdesc)
     end
     
     return nfile, count, ntred
+end
+
+local function uploadUpdateRenpyFile(project, file, lines, content)
+    local curline = 1
+    local appendlines = {}
+    
+    local offset, line = 1, 1
+    local trhead
+    local count, ntred = 1, 1
+    while true do
+        local noff, lid, desc, orgstr, trstr, ntrhead = getRenpyLine(content, offset, line, trhead)
+        
+        if noff then
+            if curline <= #lines then
+                local ldata = lines[curline]
+                assert_error(ldata.lid == lid and ldata.orgstr == orgstr, "不支持该种更新！")
+            else
+                local ldata = assert_error(MLine:create({
+                    lid = lid,
+                    fid = file.fid,
+                    ldesc = desc or "",
+                    orgstr = orgstr,
+                    trstr = ""
+                }))
+                if trstr ~= "" then
+                    local logdata = assert_error(MLog:create({
+                        fid = file.fid,
+                        lid = ldata.lid,
+                        uid = 1,
+                        utime = db.format_date(1000000),
+                        bfstr = trstr
+                    }))
+                    ldata.nupd = 1
+                    ldata.acceptlog = logdata.logid
+                    ldata.trstr = trstr
+                    assert_error(ldata:update("nupd", "acceptlog", "trstr"))
+                    ntred = ntred + 1
+                end
+                count = count + 1
+                
+                ldata.pid = project.pid
+                table.insert(appendlines, ldata)
+            end
+            
+            offset = noff
+            line = lid + 1
+            trhead = ntrhead
+            curline = curline + 1
+        else
+            break
+        end
+    end
+    
+    if count > 0 then
+        file.ntred = file.ntred + ntred
+        file.fline = file.fline + count
+        assert_error(file:update("fline", "ntred"))
+        
+        project.ntred = project.ntred + ntred
+        project.pline = project.pline + count
+        assert_error(project:update("pline", "ntred"))
+    end
+    
+    return appendlines
 end
 
 local app = lapis.Application()
@@ -902,7 +984,25 @@ app:post("uploadupdate", "/project/p:pid/others/uploadupdate", my_capture_errors
         { "uploadfile", exists = true, is_file = true }
     })
     
-    return { redirect_to = self:url_for("index") }
+    assert_error(admin_state, "上传更新文件需要管理员权限！")
+    
+    local pid = self.params.pid
+    local uptype = self.params.uploadtype
+    local upfile = self.params.uploadfile
+    
+    local project = assert_error(MProject:find(pid))
+    local file = assert_error(MFile:find({ pid = pid, fname = upfile.filename }), "找不到指定文件！")
+    local lines = MLine:select("where fid = ? ORDER BY lid", file.fid)
+    
+    assert_error(uptype == "renpy", "不支持的上传类型！")
+    
+    local appendlines = uploadUpdateRenpyFile(project, file, lines, upfile.content)
+    
+    self.project = project
+    self.file = file
+    self.lines = appendlines
+    
+    return { render = true }
 end))
 
 return app

@@ -24,7 +24,7 @@ CREATE TABLE tr_file(
   ntred INT DEFAULT 0,
   PRIMARY KEY(fid),
   FOREIGN KEY(pid) REFERENCES tr_project(pid),
-  CONSTRAINT c_filename UNIQUE(fid, fname)
+  CONSTRAINT c_filename UNIQUE(pid, fname)
 );
 
 CREATE TABLE tr_line(
