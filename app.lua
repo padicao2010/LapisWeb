@@ -518,7 +518,7 @@ app:post("file", "/project/p:pid/file/f:fid(/page:pageid)", my_capture_errors(fu
                 local log = assert_error(MLog:create({
                     fid = fid,
                     lid = lid,
-                    uid = self.current_user.uid,
+                    uid = self.admin_state and 1 or self.current_user.uid,
                     bfstr = v
                 }))
                 line.nupd = line.nupd + 1
@@ -592,7 +592,7 @@ app:post("log", "/project/p:pid/file/f:fid/line/l:lid", my_capture_errors(functi
     local linelog = assert_error(MLog:create{
         fid = fid,
         lid = lid,
-        uid = self.current_user.uid,
+        uid = self.admin_state and 1 or self.current_user.uid,
         bfstr = newstr
     })
     
@@ -668,7 +668,7 @@ app:post("dict", "/project/p:pid/dicts", my_capture_errors(function(self)
     
     local log = assert_error(MDictLog:create({
         did = dict.did,
-        uid = self.current_user.uid,
+        uid = self.admin_state and 1 or self.current_user.uid,
         ndstr = self.params.destword
     }))
     
