@@ -1,0 +1,24 @@
+#!/bin/bash
+
+user=test
+password=test
+database=test
+dbtoken=test
+filename=yurifff-backup-`date +%s`.sql
+filegzname=${filename}.tgz
+
+echo ==DUMP MySQL==
+mysqldump -u${user} -p${password} ${database} > ${filename}
+
+echo ==Compress backup data==
+tar cvzf ${filegzname} ${filename}
+
+echo ==Upload to Dropbox==
+curl -X POST https://content.dropboxapi.com/2/files/upload \
+    --header "Authorization: Bearer ${dbtoken}" \
+    --header "Dropbox-API-Arg: {\"path\": \"/${filegzname}\",\"mode\": \"add\",\"autorename\": true,\"mute\": false}" \
+    --header "Content-Type: application/octet-stream" \
+    --data-binary @${filegzname}
+
+echo ==Remove data==
+rm -f ${filename} ${filegzname}
