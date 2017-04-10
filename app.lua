@@ -1036,7 +1036,7 @@ app:get("untred", "/project/p:pid/others/untred(/n:num)", my_capture_errors(func
     })
     
     local pid = self.params.pid
-    local num = self.params.num
+    local num = tonumber(self.params.num)
     
     self.project = assert_error(MProject:find(pid))
     
