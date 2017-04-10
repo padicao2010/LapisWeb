@@ -48,53 +48,83 @@ local function analysisRenpyFile(proj, name, content, fdesc)
         fdesc = fdesc,
     }))
     
-    local offset = 1
-    local line = 1
-    local orig
-    local count = 0
-    local ntred = 0
-    local lastline
+    local offset, line = 1, 1
+    local count, ntred = 0, 0
+    local stage = 1
+    local srcfilename, srcfileline
+    local trhead
+    local linehead
+    local orgstr, trstr
+    local hasline
     local desc
     while true do
         local eols, eole = string.find(content, "\r?\n", offset)
         local l = string.sub(content, offset, eols and eols - 1)
         l = string.gsub(l, "^(%s+)", "")
-        local s = string.match(l, "\"(.*)\"")
-        if s then
-            if not orig then
-                desc = lastline
-                orig = l
+        
+        if stage == 1 then
+            local tempfilename, tempfileline = string.match(l, "^# (.*):(%d+)")
+            if tempfilename then
+                srcfilename, srcfileline = tempfilename, tempfileline
+            elseif string.match(l, "^translate.*:") then
+                trhead = l
+            elseif string.match(l, "^old%s") then
+                orgstr = l
+                desc = trhead .. (srcfilename and string.format(" (%s:%d)", srcfilename, srcfileline) or "")
+                stage = 6
             else
-                local ldata = assert_error(MLine:create({
-                    lid = line,
-                    fid = file.fid,
-                    ldesc = desc or "",
-                    orgstr = orig,
-                    trstr = ""
-                }))
-                if s ~= "" then
-                    local logdata = assert_error(MLog:create({
-                        fid = file.fid,
-                        lid = ldata.lid,
-                        uid = 1,
-                        utime = db.format_date(1000000),
-                        bfstr = s
-                    }))
-                    ldata.nupd = 1
-                    ldata.acceptlog = logdata.logid
-                    ldata.trstr = s
-                    assert_error(ldata:update("nupd", "acceptlog", "trstr"))
-                        
-                    ntred = ntred + 1
+                local temphead = string.match(l, "^#%s+([^\"]*)\".*\"")
+                if temphead then
+                    linehead = temphead
+                    orgstr = l
+                    desc = trhead .. (srcfilename and string.format(" (%s:%d)", srcfilename, srcfileline) or "")
+                    stage = 4
                 end
-                count = count + 1
-                orig = nil
-                desc = nil
+            end
+        elseif stage == 4 then
+            local tempstr = string.match(l, "^" .. linehead .. "\"(.*)\"")
+            if tempstr then
+                trstr = tempstr
+                hasline = true
+                stage = 1
+            end
+        elseif stage == 6 then
+            if string.match(l, "^new%s") then
+                trstr = string.match(l, "\"(.*)\"")
+                hasline = true
+                stage = 1
             end
         end
-        if l ~= "" then
-            lastline = #l < 254 and l or (string.sub(l, 1, 16) .. "...")
+        
+        if hasline then
+            local ldata = assert_error(MLine:create({
+                lid = line,
+                fid = file.fid,
+                ldesc = desc or "",
+                orgstr = orgstr,
+                trstr = ""
+            }))
+            if trstr ~= "" then
+                local logdata = assert_error(MLog:create({
+                    fid = file.fid,
+                    lid = ldata.lid,
+                    uid = 1,
+                    utime = db.format_date(1000000),
+                    bfstr = trstr
+                }))
+                ldata.nupd = 1
+                ldata.acceptlog = logdata.logid
+                ldata.trstr = trstr
+                assert_error(ldata:update("nupd", "acceptlog", "trstr"))
+                    
+                ntred = ntred + 1
+            end
+            count = count + 1
+            
+            srcfilename, srcfileline = nil, nil
+            hasline = false
         end
+        
         if not eols then
             break
         else
@@ -863,6 +893,16 @@ app:post("replace", "/project/p:pid/others/replace", my_capture_errors(function(
     self.dword = dword
             
     return { render = true }
+end))
+
+app:post("uploadupdate", "/project/p:pid/others/uploadupdate", my_capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "pid", exists = true, is_integer = true },
+        { "uploadtype", exists = true },
+        { "uploadfile", exists = true, is_file = true }
+    })
+    
+    return { redirect_to = self:url_for("index") }
 end))
 
 return app
