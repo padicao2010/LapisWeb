@@ -1005,4 +1005,28 @@ app:post("uploadupdate", "/project/p:pid/others/uploadupdate", my_capture_errors
     return { render = true }
 end))
 
+app:post("deletefile", "/project/p:pid/other/deletefile", my_capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "pid", exists = true, is_integer = true },
+        { "filename", exists = true },
+    })
+    
+    assert_error(self.admin_state, "删除文件需要管理员权限！")
+    
+    local project = assert_error(MProject:find(self.params.pid))
+    local file = assert_error(MFile:find({ pid = project.pid, fname = self.params.filename }), "找不到指定文件！")
+    
+    assert_error(db.delete("tr_log", { fid = file.fid }))
+    assert_error(db.delete("tr_line", { fid = file.fid }))
+    assert_error(db.delete("tr_file", { fid = file.fid }))
+    
+    project.pfile = project.pfile - 1
+    project.pline = project.pline - file.fline
+    project.ntred = project.ntred - file.ntred
+    
+    project:update("pfile", "pline", "ntred")
+    
+    return { redirect_to = self:url_for("project", project) }
+end))
+
 return app

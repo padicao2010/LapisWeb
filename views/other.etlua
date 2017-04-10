@@ -67,6 +67,16 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+                    <div class="list-group">
+                        <h4 class="list-group-item"><span class="glyphicon glyphicon-remove"></span> 删除文件（慎用）</h4>
+                        <div class="list-group-item">
+                            <form class="form" method="post" action="<%= url_for("deletefile", project) %>"  enctype="multipart/form-data">
+                                <input type="text" name="filename" required="required" class="form-control" placeholder="输入文件名字，Enter 开始删除">
+                            </form>
+                        </div>
+                    </div>
+                </div>
                 <% end %>
             </div>
         </div>
