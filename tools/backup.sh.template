@@ -20,5 +20,6 @@ curl -X POST https://content.dropboxapi.com/2/files/upload \
     --header "Content-Type: application/octet-stream" \
     --data-binary @${filegzname}
 
+echo
 echo ==Remove data==
 rm -f ${filename} ${filegzname}
