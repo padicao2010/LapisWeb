@@ -18,10 +18,17 @@
                         </a>
                     </h4>
                     <p>
-                        正在审查从 <span class="text-warning"><%= prevtime %></span> 到 <span class="text-warning"><%= curtime %></span> 的翻译修改……
+                        正在审查从 
+                        <span class="text-warning"><%= prevtime %></span> 
+                        到 
+                        <span class="text-warning"><%= curtime %></span> 
+                        的
+                        <mark><%= #lines %></mark>
+                        行翻译修改……
                     </p>
                 </div>
                     
+                <% if #lines > 0 then %>
                 <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
                     <table class="table">
                         <thead>
@@ -44,5 +51,6 @@
                         </tbody>
                     </table>
                 </div>
+                <% end %>
             </div>
         </div>
