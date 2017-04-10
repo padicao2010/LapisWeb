@@ -1031,15 +1031,16 @@ end))
 
 app:get("untred", "/project/p:pid/others/untred(/n:num)", my_capture_errors(function(self)
     validate.assert_valid(self.params, {
-        { "pid", exists = true, is_integer = true }
+        { "pid", exists = true, is_integer = true },
+        { "num", exists = true, is_integer = true }
     })
     
     local pid = self.params.pid
-    local num = tonumber(self.params.num)
+    local num = self.params.num
     
     self.project = assert_error(MProject:find(pid))
     
-    self.lines = assert_error(db.select("f.pid, l.fid, l.lid, l.orgstr, l.trstr FROM tr_file f, tr_line l WHERE f.pid = ? AND f.fid = l.fid AND l.nupd = 0 ORDER BY l.fid, l.lid" .. (num and " LIMIT ?" or ""),
+    self.lines = assert_error(db.select("f.pid, l.fid, l.lid, l.orgstr, l.trstr FROM tr_file f, tr_line l WHERE f.pid = ? AND f.fid = l.fid AND l.nupd = 0 ORDER BY l.fid, l.lid LIMIT ?",
         pid, num))
         
     return { render = true }

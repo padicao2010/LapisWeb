@@ -27,8 +27,8 @@
                             <a class="btn btn-default" href="<%= url_for("untred", { pid = project.pid, num = 50 }) %>">
                                 前 50 行
                             </a>
-                            <a class="btn btn-default" href="<%= url_for("untred", { pid = project.pid }) %>">
-                                全部（慎用）
+                            <a class="btn btn-default" href="<%= url_for("untred", { pid = project.pid, num = 250 }) %>">
+                                前 250 行
                             </a>
                         </div>
                     </div>
