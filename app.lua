@@ -922,11 +922,11 @@ app:post("search", "/project/p:pid/others/search", my_capture_errors(function(se
     self.project = assert_error(MProject:find(pid))
     
     if self.stype == "orgstr" then
-        self.lines = assert_error(db.select("f.pid, f.fid, l.lid, l.orgstr, l.trstr FROM tr_line l, tr_file f WHERE f.pid = ? AND f.fid = l.fid AND orgstr LIKE ?", 
-            pid, "%" .. self.skey .. "%"))
+        self.lines = assert_error(db.select("f.pid, f.fid, l.lid, l.orgstr, l.trstr FROM tr_line l, tr_file f WHERE f.pid = ? AND f.fid = l.fid AND orgstr REGEXP ?", 
+            pid, self.skey))
     elseif self.stype == "trstr" then
-        self.lines = assert_error(db.select("f.pid, f.fid, l.lid, l.orgstr, l.trstr FROM tr_line l, tr_file f WHERE f.pid = ? AND f.fid = l.fid AND trstr LIKE ?", 
-            pid, "%" .. self.skey .. "%"))
+        self.lines = assert_error(db.select("f.pid, f.fid, l.lid, l.orgstr, l.trstr FROM tr_line l, tr_file f WHERE f.pid = ? AND f.fid = l.fid AND trstr REGEXP ?", 
+            pid, self.skey))
     else
         assert_error(nil, "未找到匹配的搜索类型！")
     end
@@ -949,8 +949,8 @@ app:post("replace", "/project/p:pid/others/replace", my_capture_errors(function(
     
     self.project = assert_error(MProject:find(pid))
     
-    local lines = assert_error(db.select("f.pid, f.fid, l.lid, l.orgstr, l.trstr FROM tr_line l, tr_file f WHERE f.pid = ? AND f.fid = l.fid AND trstr LIKE ?", 
-            pid, "%" .. sword .. "%"))
+    local lines = assert_error(db.select("f.pid, f.fid, l.lid, l.orgstr, l.trstr FROM tr_line l, tr_file f WHERE f.pid = ? AND f.fid = l.fid AND trstr REGEXP ?", 
+            pid, sword))
     for _, l in ipairs(lines) do
         local line = assert_error(MLine:find(l.fid, l.lid))
         local newstr = string.gsub(line.trstr, sword, dword)
