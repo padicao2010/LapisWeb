@@ -589,24 +589,26 @@ app:post("log", "/project/p:pid/file/f:fid/line/l:lid", my_capture_errors(functi
     local project = assert_error(MProject:find(pid))
     local file = assert_error(MFile:find(fid))
     local line = assert_error(MLine:find(fid, lid))
-    local linelog = assert_error(MLog:create{
-        fid = fid,
-        lid = lid,
-        uid = self.admin_state and 1 or self.current_user.uid,
-        bfstr = newstr
-    })
+    if line.trstr ~= newstr then
+        local linelog = assert_error(MLog:create{
+                fid = fid,
+                lid = lid,
+                uid = self.admin_state and 1 or self.current_user.uid,
+                bfstr = newstr
+        })
     
-    line.trstr = newstr
-    line.nupd = line.nupd + 1
-    line.acceptlog = linelog.logid
-    assert_error(line:update("nupd", "trstr", "acceptlog"))
+        line.trstr = newstr
+        line.nupd = line.nupd + 1
+        line.acceptlog = linelog.logid
+        assert_error(line:update("nupd", "trstr", "acceptlog"))
     
-    if line.nupd == 1 then
-        file.ntred = file.ntred + 1
-        assert_error(file:update("ntred"))
+        if line.nupd == 1 then
+                file.ntred = file.ntred + 1
+                assert_error(file:update("ntred"))
         
-        project.ntred = project.ntred + 1
-        assert_error(project:update("ntred"))
+                project.ntred = project.ntred + 1
+                assert_error(project:update("ntred"))
+        end
     end
     
     return { redirect_to = self:url_for("log", self.params) }
