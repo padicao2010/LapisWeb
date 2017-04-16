@@ -250,6 +250,56 @@ local function dropFilePrevNext(cache, pid, fid)
     end
 end
 
+local function getProjectWorkers(cache, pid)
+    local key = "p" .. pid .. "us"
+    local s = cache:get(key)
+    local users = {}
+    if s then
+        local temp = cjson.decode(s)
+        for k, v in pairs(temp) do
+            local u = getUser(mycache, tonumber(k))
+            u.nupd = v
+            table.insert(users, u)
+        end
+    else
+        local results = assert_error(db.select("l.uid, COUNT(*) FROM tr_file f, tr_log l WHERE f.pid = ? AND f.fid = l.fid GROUP BY l.uid",
+            pid))
+        local map = {}
+        for i, r in ipairs(results) do
+            local uid = tostring(r["uid"])
+            local nupd = tonumber(r["COUNT(*)"])
+            map[uid] = nupd
+            local u = getUser(mycache, uid)
+            u.nupd = nupd
+            table.insert(users, u)
+        end
+        s = cjson.encode(map)
+        cache:set(key, s)
+    end
+    table.sort(users, function(u1, u2)
+        return u1.nupd > u2.nupd
+    end)
+    
+    return users
+end
+
+local function dropProjectWorkers(cache, pid)
+    local key = "p" .. pid .. "us"
+    cache:delete(key)
+end
+
+local function updateProjectWorker(cache, pid, uid, nupd)
+    local key = "p" .. pid .. "us"
+    local s = cache:get(key)
+    uid = tostring(uid)
+    if s then
+        local map = cjson.decode(s)
+        map[uid] = (map[uid] or 0) + nupd
+        s = cjson.encode(map)
+        cache:set(key, s)
+    end
+end
+
 local function getRenpyLine(content, offset, line, trhead)
     local stage = 1
     local srcfilename, srcfileline
@@ -559,6 +609,8 @@ app:get("project", "/project/p:pid/files(/page:pageid)", my_capture_errors(funct
     self.files = getFiles(mycache, pid, self.pageIndex)
     self.pageCount = math.ceil(self.project.nfile / PER_PAGE)
     
+    self.workers = getProjectWorkers(mycache, pid)
+    
     return { render = true }
 end))
 
@@ -592,6 +644,10 @@ app:post("project", "/project/p:pid/files(/page:pageid)", my_capture_errors(func
         dropFiles(mycache, pid, math.floor((nfile - 1) / PER_PAGE) + 1)
         
         dropFilePrevNext(mycache, pid, firstfid)
+        
+        if ntred > 0 then
+            updateProjectWorker(mycache, pid, 1, ntred)
+        end
     end
 
     return { redirect_to = self:url_for("project", self.params) }
@@ -638,8 +694,10 @@ app:post("file", "/project/p:pid/file/f:fid(/page:pageid)", my_capture_errors(fu
     local pid = self.params.pid
     local fid = self.params.fid
     local pageid = tonumber(self.params.pageid) or 1
+    local uid = self.admin_state and 1 or self.current_user.uid
     
     local ntred = 0
+    local nupd = 0
     
     for k, v in pairs(self.params) do
         local lid = string.match(k, "line(%d+)")
@@ -651,10 +709,11 @@ app:post("file", "/project/p:pid/file/f:fid(/page:pageid)", my_capture_errors(fu
                 local log = assert_error(MLog:create({
                     fid = fid,
                     lid = lid,
-                    uid = self.admin_state and 1 or self.current_user.uid,
+                    uid = uid,
                     bfstr = v
                 }))
                 line.nupd = line.nupd + 1
+                nupd = nupd + 1
                 if line.nupd == 1 then
                     ntred = ntred + 1
                 end
@@ -672,6 +731,10 @@ app:post("file", "/project/p:pid/file/f:fid(/page:pageid)", my_capture_errors(fu
 
         local project = getProject(mycache, pid)
         updateProjectStatistics(mycache, project, 0, 0, ntred)
+    end
+    
+    if nupd > 0 then
+        updateProjectWorker(mycache, pid, uid, nupd)
     end
     
     self.session.last_update = { pid = pid, fid = fid, pageid = pageid }
@@ -738,6 +801,8 @@ app:post("log", "/project/p:pid/file/f:fid/line/l:lid", my_capture_errors(functi
             updateFileStatistics(mycache, file, 0, 1)
             updateProjectStatistics(mycache, project, 0, 0, 1)
         end
+        
+        updateProjectWorker(mycache, pid, linelog.uid, 1)
     end
     
     return { redirect_to = self:url_for("log", self.params) }
@@ -1161,6 +1226,9 @@ local function uploadUpdateRenpyFile(project, file, lines, content)
     if count > 0 then
         updateFileStatistics(mycache, file, count, ntred)
         updateProjectStatistics(mycache, project, 0, count, ntred)
+        if ntred > 0 then
+            updateProjectWorker(mycache, project.pid, 1, ntred)
+        end
     end
     
     return appendlines
@@ -1217,6 +1285,8 @@ app:post("deletefile", "/project/p:pid/others/deletefile", my_capture_errors(fun
     assert_error(db.delete("tr_log", { fid = file.fid }))
     assert_error(db.delete("tr_line", { fid = file.fid }))
     assert_error(db.delete("tr_file", { fid = file.fid }))
+    
+    dropProjectWorkers(mycache, pid)
     
     return { redirect_to = self:url_for("project", project) }
 end))

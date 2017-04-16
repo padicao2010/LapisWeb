@@ -65,13 +65,14 @@
                 </div>
                 
                 <div class="col-sm-3 col-sm-offset-1 col-sm-push-7 col-md-2 col-md-offset-2 col-md-push-6">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">
-                            <a data-toggle="collapse" data-target="#showWorkers">贡献者列表</a>
-                        </div>
-                        <div class="panel-body collapse" id="showWorkers">
-                            <p>贡献者一 <span class="badge">4</span></p>
-                            <p>贡献者二 <span class="badge">20</span></p>
+                    <div class="list-group">
+                        <a class="list-group-item" data-toggle="collapse" data-target="#showWorkers">
+                            <h4>贡献者列表</h4>
+                        </a>
+                        <div class="collapse" id="showWorkers">
+                            <% for i, w in ipairs(workers) do %>
+                            <p class="list-group-item"><%= w.uname %> <span class="badge"><%= w.nupd %></span></p>
+                            <% end %>
                         </div>
                     </div>
                 </div>
