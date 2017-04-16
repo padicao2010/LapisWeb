@@ -6,6 +6,7 @@ local lfs = require("lfs")
 local date = require("date")
 local db = require("lapis.db")
 local util = require("lapis.util")
+local cjson = require("cjson")
 
 local config = require("lapis.config").get()
 
@@ -277,6 +278,78 @@ local function uploadUpdateRenpyFile(project, file, lines, content)
     return appendlines
 end
 
+local function getUser(cache, uid)
+    local key = "u" .. uid
+    local s = cache:get(key)
+    local ret
+    if s then
+        ret = { 
+            uid = uid,
+            uname = s 
+        }
+    else
+        ret = MUser:find(uid)
+        if ret then
+            cache:set(key, ret.uname)
+        end
+    end
+    return ret
+end
+
+local function getProjectStatistics(pid)
+    local nfile = assert_error(db.select("COUNT(*) FROM tr_file WHERE pid = ?", pid))[1]["COUNT(*)"]
+    local nline = assert_error(db.select("COUNT(*) FROM tr_line l, tr_file f WHERE f.pid = ? AND f.fid = l.fid", pid))[1]["COUNT(*)"]
+    local ntred = assert_error(db.select("COUNT(*) FROM tr_line l, tr_file f WHERE f.pid = ? AND f.fid = l.fid AND l.nupd > 0", pid))[1]["COUNT(*)"]
+    
+    return nfile, nline, ntred
+end
+
+local function getProject(cache, pid)
+    local key = "p" .. pid
+    local s = cache:get(key)
+    local project
+    if s then
+        ngx.log(ngx.NOTICE, "HIT CACHE: " .. s)
+        project = cjson.decode(s)
+    else
+        project = assert_error(MProject:find(pid));
+        project.nfile, project.nline, project.ntred = getProjectStatistics(pid)
+        s = cjson.encode(project)
+        cache:set(key, s)
+        ngx.log(ngx.NOTICE, "ADD CACHE: " .. s)
+    end
+    return project
+end
+
+local function getProjects(cache)
+    local key = "ps"
+    local s = cache:get(key)
+    local ps
+    if s then
+        local pids = cjson.decode(s)
+        ps = {}
+        for i, pid in ipairs(pids) do
+            local project = getProject(cache, pid)
+            table.insert(ps, project)
+        end
+    else
+        ps = assert_error(MProject:select())
+        local pids = {}
+        for i, project in ipairs(ps) do
+            local pid = project.pid
+            project.nfile, project.nline, project.ntred = getProjectStatistics(pid)
+            local temp = cjson.encode(project)
+            cache:set("p" .. pid, temp)
+            
+            table.insert(pids, pid)
+        end
+        s = cjson.encode(pids)
+        cache:set(key, s)
+    end
+    
+    return ps
+end
+
 local app = lapis.Application()
 app:enable("etlua")
 app.layout = require "views.layout"
@@ -300,7 +373,7 @@ app:before_filter(function(self)
     local id = self.session.user_id
         
     if id then
-        self.current_user = MUser:find(id)
+        self.current_user = getUser(ngx.shared.mycache, id)
         if self.current_user and id == 0 then
             self.admin_state = true
         end
@@ -313,7 +386,7 @@ app.cookie_attributes = function(self)
 end
 
 app:get("index", "/", function(self)
-    self.projects = MProject:select()
+    self.projects = getProjects(ngx.shared.mycache)
     return { render = true }
 end)
 
@@ -442,7 +515,7 @@ app:post("project", "/project/p:pid/files(/page:pageid)", my_capture_errors(func
     project.ntred = project.ntred + ntred
     assert_error(project:update("pfile", "pline", "ntred"))
     
-    ngx.shared.filepn:flush_all()
+    ngx.shared.mycache:flush_all()
 
     return { redirect_to = self:url_for("project", self.params) }
 end))
@@ -465,7 +538,7 @@ app:get("file", "/project/p:pid/file/f:fid(/page:pageid)", my_capture_errors(fun
     end
 
     local lkey = string.format("p%df%d", self.params.pid, self.params.fid)
-    local filepn = ngx.shared.filepn
+    local filepn = ngx.shared.mycache
     
     local prevkey = lkey .. "p"
     local prevfid = filepn:get(prevkey)
@@ -799,7 +872,7 @@ app:get("genupdate", "/project/p:pid/genupdate/t:time", my_capture_errors(functi
     
     local path = string.format("download/%d/update-%s.json", pid, curtime)
     local output = assert_error(io.open(path, "w"))
-    output:write(require("cjson").encode(lines))
+    output:write(cjson.encode(lines))
     output:close()
     
     project.lastupdate = curtime

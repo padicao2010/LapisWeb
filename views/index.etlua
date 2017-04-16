@@ -42,8 +42,8 @@
                                 <%= p.pname %>
                             </h4>
                             <p>
-                                共 <span class="text-warning"><%= p.pfile %></span> 个文件，
-                                共 <span class="text-warning"><%= p.pline %></span> 行，
+                                共 <span class="text-warning"><%= p.nfile %></span> 个文件，
+                                共 <span class="text-warning"><%= p.nline %></span> 行，
                                 已翻译 <span class="text-warning"><%= p.ntred %></span> 行
                             </p>
                         </a>
