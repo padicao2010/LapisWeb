@@ -10,7 +10,7 @@ events {
 http {
   include mime.types;
   client_max_body_size 30M;
-  lua_shared_dict filepn 12k;
+  lua_shared_dict myshare 16M;
 
   server {
     listen ${{PORT}};
