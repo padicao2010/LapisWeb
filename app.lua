@@ -42,6 +42,214 @@ local MComment = Model:extend("tr_comment", {
     primary_key = "cid"
 })
 
+local mycache = ngx.shared.mycache
+
+local function getUser(cache, uid)
+    local key = "u" .. uid
+    local s = cache:get(key)
+    local ret
+    if s then
+        ret = { 
+            uid = uid,
+            uname = s 
+        }
+    else
+        ret = MUser:find(uid)
+        if ret then
+            cache:set(key, ret.uname)
+        end
+    end
+    return ret
+end
+
+local function getProjectStatistics(pid)
+    local nfile = assert_error(db.select("COUNT(*) FROM tr_file WHERE pid = ?", pid))[1]["COUNT(*)"]
+    local nline = assert_error(db.select("COUNT(*) FROM tr_line l, tr_file f WHERE f.pid = ? AND f.fid = l.fid", pid))[1]["COUNT(*)"]
+    local ntred = assert_error(db.select("COUNT(*) FROM tr_line l, tr_file f WHERE f.pid = ? AND f.fid = l.fid AND l.nupd > 0", pid))[1]["COUNT(*)"]
+    
+    return nfile, nline, ntred
+end
+
+local function updateProjectStatistics(cache, project, file, line, tred)
+    project.nfile = project.nfile + file
+    project.nline = project.nline + line
+    project.ntred = project.ntred + tred
+    
+    local key = "p" .. project.pid
+    local s = cjson.encode(project)
+    cache:set(key, s)
+    
+    return project.nfile, project.nline, project.ntred
+end
+
+local function getProject(cache, pid)
+    local key = "p" .. pid
+    local s = cache:get(key)
+    local project
+    if s then
+        project = cjson.decode(s)
+    else
+        project = assert_error(MProject:find(pid));
+        project.nfile, project.nline, project.ntred = getProjectStatistics(pid)
+        s = cjson.encode(project)
+        cache:set(key, s)
+    end
+    return project
+end
+
+local function updateProjectLU(cache, project, t)
+    assert_error(db.update("tr_project", {
+        lastupdate = t
+    }, {
+        pid = project.pid
+    }))
+    
+    local key = "p" .. project.pid
+    project.lastupdate = t
+    local s = cjson.encode(project)
+    cache:set(key, s)
+end
+
+local function getProjects(cache)
+    local key = "ps"
+    local s = cache:get(key)
+    local ps = {}
+    if s then
+        local pids = cjson.decode(s)
+        for i, pid in ipairs(pids) do
+            local project = getProject(cache, pid)
+            table.insert(ps, project)
+        end
+    else
+        local temp = assert_error(MProject:select(nil, { fields = "pid" }))
+        local pids = {}
+        for i, t in ipairs(temp) do
+            local pid = t.pid
+            local project = getProject(cache, pid)
+            
+            table.insert(ps, project)
+            table.insert(pids, pid)
+        end
+        s = cjson.encode(pids)
+        cache:set(key, s)
+    end
+    
+    return ps
+end
+
+local function dropProjects(cache)
+    local key = "ps"
+    cache:delete(key)
+end
+
+local function getFileStatistics(fid)
+    local nline = assert_error(db.select("COUNT(*) FROM tr_line WHERE fid = ?", fid))[1]["COUNT(*)"]
+    local ntred = assert_error(db.select("COUNT(*) FROM tr_line WHERE fid = ? AND nupd > 0", fid))[1]["COUNT(*)"]
+    
+    return nline, ntred
+end
+
+local function updateFileStatistics(cache, file, line, tred)
+    file.nline = file.nline + line
+    file.ntred = file.ntred + tred
+    
+    local key = "f" .. file.fid
+    local s = cjson.encode(file)
+    cache:set(key, s)
+    
+    return file.nline, file.ntred
+end
+
+local function getFile(cache, fid)
+    local key = "f" .. fid
+    local s = cache:get(key)
+    local file
+    if s then
+        file = cjson.decode(s)
+    else
+        file = assert_error(MFile:find(fid))
+        file.nline, file.ntred = getFileStatistics(fid)
+        s = cjson.encode(file)
+        cache:set(key, s)
+    end
+    return file
+end
+
+local function getFiles(cache, pid, page)
+    local key = "p" .. pid .. "fs" .. page
+    local s = cache:get(key)
+    local files = {}
+    if s then
+        local fids = cjson.decode(s)
+        for i, fid in ipairs(fids) do
+            local file = getFile(cache, fid)
+            table.insert(files, file)
+        end
+    else
+        local temp = assert_error(MFile:select("WHERE pid = ? ORDER BY fid ASC LIMIT ? OFFSET ?", 
+            pid, PER_PAGE, PER_PAGE * (page - 1),
+            { fields = "fid" }))
+        local fids = {}
+        for i, t in ipairs(temp) do
+            local fid = t.fid
+            local file = getFile(cache, fid)
+            table.insert(files, file)
+            table.insert(fids, fid)
+        end
+        s = cjson.encode(fids)
+        cache:set(key, s)
+    end
+    
+    return files
+end
+
+local function dropFiles(cache, pid, page)
+    local key = "p" .. pid .. "fs" .. page
+    cache:delete(key)
+end
+
+local function dropAllFiles(cache, pid, nfile)
+    local pageCount = math.floor(nfile - 1) / PER_PAGE + 1;
+    for i = 1, pageCount do
+        local key = "p" .. pid .. "fs" .. i
+        cache:delete(key)
+    end
+end
+
+local function getFilePrevNext(cache, pid, fid)
+    local key = "f" .. fid .. "pn"
+    local s = cache:get(key)
+    local pn
+    if s then
+        pn = cjson.decode(s)
+    else
+        pn = {}
+        local prevfile = assert_error(db.select("MAX(fid) FROM tr_file WHERE pid = ? and fid < ?",
+            pid, fid))
+        pn.prevfid = tonumber(prevfile[1]["MAX(fid)"])
+        
+        local nextfile = assert_error(db.select("MIN(fid) FROM tr_file WHERE pid = ? and fid > ?", 
+            pid, fid))
+        pn.nextfid = tonumber(nextfile[1]["MIN(fid)"])
+        
+        s = cjson.encode(pn)
+        cache:set(key, s)
+    end
+    return pn.prevfid, pn.nextfid
+end
+
+local function dropFilePrevNext(cache, pid, fid)
+    local prevfid, nextfid = getFilePrevNext(cache, pid, fid)
+    
+    if prevfid then
+        cache:delete("f" .. prevfid .. "pn")
+    end
+    
+    if nextfid then
+        cache:delete("f" .. nextfid .. "pn")
+    end
+end
+
 local function getRenpyLine(content, offset, line, trhead)
     local stage = 1
     local srcfilename, srcfileline
@@ -106,12 +314,13 @@ local function getRenpyLine(content, offset, line, trhead)
     end
 end
 
-local function analysisRenpyFile(proj, name, content, fdesc)
+local function analysisRenpyFile(pid, name, content, fdesc)
     local file = assert_error(MFile:create({
-        pid = proj.pid,
+        pid = pid,
         fname = name,
         fdesc = fdesc,
     }), "该文件已存在！")
+    file = getFile(mycache, file.fid)
     
     local offset, line = 1, 1
     local count, ntred = 0, 0
@@ -153,30 +362,31 @@ local function analysisRenpyFile(proj, name, content, fdesc)
     end
     
     if count > 0 then
-        file.fline = count
-        file.ntred = ntred 
-        assert(file:update("fline", "ntred"))
+        updateFileStatistics(mycache, file, count, ntred)
     end
     
-    return 1, count, ntred
+    return 1, count, ntred, file.fid
 end
 
-local function analysisLuaFile(proj, name, content, fdesc)
+local function analysisLuaFile(pid, name, content, fdesc)
     local plpretty = require "pl.pretty"
     local trs = plpretty.read(content)
     
     local nfile, count, ntred = 0, 0, 0
+    local firstfid
     
     for _, tr in ipairs(trs) do
         local file = assert_error(MFile:create({
-            pid = proj.pid,
+            pid = pid,
             fname = tr[2],
             fdesc = string.format("%s\n%s", tr[1], tr[3]),
-            fline = #tr - 5,
-            ntred = tr[4]
         }))
+        file = getFile(mycache, file.fid)
+        updateFileStatistics(mycache, file, #tr - 5, tr[4])
+        
+        firstfid = firstfid or file.fid
         nfile = nfile + 1
-        count = count + file.fline
+        count = count + file.nline
         ntred = ntred + file.ntred
         
         for i = 6, #tr do
@@ -211,143 +421,7 @@ local function analysisLuaFile(proj, name, content, fdesc)
         end
     end
     
-    return nfile, count, ntred
-end
-
-local function uploadUpdateRenpyFile(project, file, lines, content)
-    local curline = 1
-    local appendlines = {}
-    
-    local offset, line = 1, 1
-    local trhead
-    local count, ntred = 1, 1
-    while true do
-        local noff, lid, desc, orgstr, trstr, ntrhead = getRenpyLine(content, offset, line, trhead)
-        
-        if noff then
-            if curline <= #lines then
-                local ldata = lines[curline]
-                assert_error(ldata.lid == lid and ldata.orgstr == orgstr, "不支持该种更新！")
-            else
-                local ldata = assert_error(MLine:create({
-                    lid = lid,
-                    fid = file.fid,
-                    ldesc = desc or "",
-                    orgstr = orgstr,
-                    trstr = ""
-                }))
-                if trstr ~= "" then
-                    local logdata = assert_error(MLog:create({
-                        fid = file.fid,
-                        lid = ldata.lid,
-                        uid = 1,
-                        utime = db.format_date(1000000),
-                        bfstr = trstr
-                    }))
-                    ldata.nupd = 1
-                    ldata.acceptlog = logdata.logid
-                    ldata.trstr = trstr
-                    assert_error(ldata:update("nupd", "acceptlog", "trstr"))
-                    ntred = ntred + 1
-                end
-                count = count + 1
-                
-                ldata.pid = project.pid
-                table.insert(appendlines, ldata)
-            end
-            
-            offset = noff
-            line = lid + 1
-            trhead = ntrhead
-            curline = curline + 1
-        else
-            break
-        end
-    end
-    
-    if count > 0 then
-        file.ntred = file.ntred + ntred
-        file.fline = file.fline + count
-        assert_error(file:update("fline", "ntred"))
-        
-        project.ntred = project.ntred + ntred
-        project.pline = project.pline + count
-        assert_error(project:update("pline", "ntred"))
-    end
-    
-    return appendlines
-end
-
-local function getUser(cache, uid)
-    local key = "u" .. uid
-    local s = cache:get(key)
-    local ret
-    if s then
-        ret = { 
-            uid = uid,
-            uname = s 
-        }
-    else
-        ret = MUser:find(uid)
-        if ret then
-            cache:set(key, ret.uname)
-        end
-    end
-    return ret
-end
-
-local function getProjectStatistics(pid)
-    local nfile = assert_error(db.select("COUNT(*) FROM tr_file WHERE pid = ?", pid))[1]["COUNT(*)"]
-    local nline = assert_error(db.select("COUNT(*) FROM tr_line l, tr_file f WHERE f.pid = ? AND f.fid = l.fid", pid))[1]["COUNT(*)"]
-    local ntred = assert_error(db.select("COUNT(*) FROM tr_line l, tr_file f WHERE f.pid = ? AND f.fid = l.fid AND l.nupd > 0", pid))[1]["COUNT(*)"]
-    
-    return nfile, nline, ntred
-end
-
-local function getProject(cache, pid)
-    local key = "p" .. pid
-    local s = cache:get(key)
-    local project
-    if s then
-        ngx.log(ngx.NOTICE, "HIT CACHE: " .. s)
-        project = cjson.decode(s)
-    else
-        project = assert_error(MProject:find(pid));
-        project.nfile, project.nline, project.ntred = getProjectStatistics(pid)
-        s = cjson.encode(project)
-        cache:set(key, s)
-        ngx.log(ngx.NOTICE, "ADD CACHE: " .. s)
-    end
-    return project
-end
-
-local function getProjects(cache)
-    local key = "ps"
-    local s = cache:get(key)
-    local ps
-    if s then
-        local pids = cjson.decode(s)
-        ps = {}
-        for i, pid in ipairs(pids) do
-            local project = getProject(cache, pid)
-            table.insert(ps, project)
-        end
-    else
-        ps = assert_error(MProject:select())
-        local pids = {}
-        for i, project in ipairs(ps) do
-            local pid = project.pid
-            project.nfile, project.nline, project.ntred = getProjectStatistics(pid)
-            local temp = cjson.encode(project)
-            cache:set("p" .. pid, temp)
-            
-            table.insert(pids, pid)
-        end
-        s = cjson.encode(pids)
-        cache:set(key, s)
-    end
-    
-    return ps
+    return nfile, count, ntred, firstfid
 end
 
 local app = lapis.Application()
@@ -373,7 +447,7 @@ app:before_filter(function(self)
     local id = self.session.user_id
         
     if id then
-        self.current_user = getUser(ngx.shared.mycache, id)
+        self.current_user = getUser(mycache, id)
         if self.current_user and id == 0 then
             self.admin_state = true
         end
@@ -386,7 +460,7 @@ app.cookie_attributes = function(self)
 end
 
 app:get("index", "/", function(self)
-    self.projects = getProjects(ngx.shared.mycache)
+    self.projects = getProjects(mycache)
     return { render = true }
 end)
 
@@ -469,6 +543,8 @@ app:post("new", "/project/new", my_capture_errors(function(self)
     local project = assert_error(MProject:create({ pname = self.params.name, pdesc = self.params.desc }))
     
     lfs.mkdir("download/" .. project.pid)
+    
+    dropProjects(mycache)
     return { redirect_to = self:url_for("index") }
 end))
 
@@ -476,12 +552,12 @@ app:get("project", "/project/p:pid/files(/page:pageid)", my_capture_errors(funct
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
     })
-    self.project = assert_error(MProject:find(self.params.pid))
-        
-    local paginated = MFile:paginated("where pid = ? order by fid asc", self.project.pid, { per_page = PER_PAGE })
+    local pid = self.params.pid
+    self.project = getProject(mycache, pid)
+    
     self.pageIndex = tonumber(self.params.pageid) or 1
-    self.files = paginated:get_page(self.pageIndex)
-    self.pageCount = math.ceil(self.project.pfile / PER_PAGE)
+    self.files = getFiles(mycache, pid, self.pageIndex)
+    self.pageCount = math.ceil(self.project.nfile / PER_PAGE)
     
     return { render = true }
 end))
@@ -499,23 +575,24 @@ app:post("project", "/project/p:pid/files(/page:pageid)", my_capture_errors(func
     local filetype = self.params.type
     local upfile = self.params.uploadfile
     
-    local project = assert_error(MProject:find(self.params.pid))
+    local pid = self.params.pid
 
-    local nfile, count, ntred
+    local nfile, count, ntred, firstfid
     if filetype == "renpy" then
-        nfile, count, ntred = analysisRenpyFile(project, upfile.filename, upfile.content, self.params.desc)
+        nfile, count, ntred, firstfid = analysisRenpyFile(pid, upfile.filename, upfile.content, self.params.desc)
     elseif filetype == "lua" then
-        nfile, count, ntred = analysisLuaFile(project, upfile.filename, upfile.content, self.params.desc)
+        nfile, count, ntred, firstfid = analysisLuaFile(pid, upfile.filename, upfile.content, self.params.desc)
     else
         assert_error(nil, "文件类型不支持：" .. tostring(filetype))
     end
     
-    project.pfile = project.pfile + nfile
-    project.pline = project.pline + count
-    project.ntred = project.ntred + ntred
-    assert_error(project:update("pfile", "pline", "ntred"))
-    
-    ngx.shared.mycache:flush_all()
+    if nfile > 0 then
+        local project = getProject(mycache, pid)
+        local nfile = updateProjectStatistics(mycache, project, nfile, count, ntred)
+        dropFiles(mycache, pid, math.floor((nfile - 1) / PER_PAGE) + 1)
+        
+        dropFilePrevNext(mycache, pid, firstfid)
+    end
 
     return { redirect_to = self:url_for("project", self.params) }
 end))
@@ -527,40 +604,23 @@ app:get("file", "/project/p:pid/file/f:fid(/page:pageid)", my_capture_errors(fun
     })
     
     local pid = self.params.pid
-    self.project = assert_error(MProject:find(pid))
-    self.file = assert_error(MFile:find(self.params.fid))
+    local fid = self.params.fid
+    self.project = getProject(mycache, pid)
+    self.file = getFile(mycache, fid)
+    
     local paginated = MLine:paginated("where fid = ? order by lid asc", self.file.fid, { per_page = PER_PAGE })
     self.pageIndex = tonumber(self.params.pageid) or 1
-    self.pageCount = math.ceil(self.file.fline / PER_PAGE)
+    self.pageCount = math.ceil(self.file.nline / PER_PAGE)
     self.lines = paginated:get_page(self.pageIndex)
     for _, l in ipairs(self.lines) do
         l.pid = pid
     end
-
-    local lkey = string.format("p%df%d", self.params.pid, self.params.fid)
-    local filepn = ngx.shared.mycache
     
-    local prevkey = lkey .. "p"
-    local prevfid = filepn:get(prevkey)
-    if not prevfid then
-        local prevfile = assert_error(db.select("MAX(fid) FROM tr_file WHERE pid = ? and fid < ?",
-            self.params.pid, self.params.fid))
-        prevfid = tonumber(prevfile[1]["MAX(fid)"]) or -1
-        filepn:set(prevkey, prevfid)
-    end
-    if prevfid > 0 then
+    local prevfid, nextfid = getFilePrevNext(mycache, pid, fid)
+    if prevfid then
         self.prevf = { pid = self.file.pid, fid = prevfid }
     end
-    
-    local nextkey = lkey .. "n"
-    local nextfid = filepn:get(nextkey)
-    if not nextfid then
-        local nextfile = assert_error(db.select("MIN(fid) FROM tr_file WHERE pid = ? and fid > ?", 
-            self.params.pid, self.params.fid))
-        nextfid = tonumber(nextfile[1]["MIN(fid)"]) or -1
-        filepn:set(nextkey, nextfid)
-    end
-    if nextfid > 0 then
+    if nextfid then
         self.nextf = { pid = self.file.pid, fid = nextfid }
     end
     
@@ -607,12 +667,11 @@ app:post("file", "/project/p:pid/file/f:fid(/page:pageid)", my_capture_errors(fu
     end
     
     if ntred > 0 then
-        local file = assert_error(MFile:find(fid))
-        file.ntred = file.ntred + ntred
-        assert_error(file:update("ntred"))
-        local project = assert_error(MProject:find(pid))
-        project.ntred = project.ntred + ntred
-        assert_error(project:update("ntred"))
+        local file = getFile(mycache, fid)
+        updateFileStatistics(mycache, file, 0, ntred)
+
+        local project = getProject(mycache, pid)
+        updateProjectStatistics(mycache, project, 0, 0, ntred)
     end
     
     self.session.last_update = { pid = pid, fid = fid, pageid = pageid }
@@ -633,8 +692,8 @@ app:get("log", "/project/p:pid/file/f:fid/line/l:lid", my_capture_errors(functio
     })
     
     local pid, fid, lid = self.params.pid, self.params.fid, self.params.lid
-    self.file = assert_error(MFile:find(fid))
-    self.project = assert_error(MProject:find(pid))
+    self.file = getFile(mycache, fid)
+    self.project = getProject(mycache, pid)
     self.line = assert_error(MLine:find(fid, lid))
     
     self.logs = assert_error(db.select("l.logid, l.lid, l.bfstr, l.utime, u.uname FROM tr_log l, tr_user u WHERE l.fid = ? AND l.lid = ? AND l.uid = u.uid ORDER BY l.utime ASC", fid, lid))
@@ -659,8 +718,8 @@ app:post("log", "/project/p:pid/file/f:fid/line/l:lid", my_capture_errors(functi
     local pid, fid, lid = self.params.pid, self.params.fid, self.params.lid
     local newstr = self.params.newstr
     
-    local project = assert_error(MProject:find(pid))
-    local file = assert_error(MFile:find(fid))
+    local project = getProject(mycache, pid)
+    local file = getFile(mycache, fid)
     local line = assert_error(MLine:find(fid, lid))
     if line.trstr ~= newstr then
         local linelog = assert_error(MLog:create{
@@ -676,11 +735,8 @@ app:post("log", "/project/p:pid/file/f:fid/line/l:lid", my_capture_errors(functi
         assert_error(line:update("nupd", "trstr", "acceptlog"))
     
         if line.nupd == 1 then
-                file.ntred = file.ntred + 1
-                assert_error(file:update("ntred"))
-        
-                project.ntred = project.ntred + 1
-                assert_error(project:update("ntred"))
+            updateFileStatistics(mycache, file, 0, 1)
+            updateProjectStatistics(mycache, project, 0, 0, 1)
         end
     end
     
@@ -711,7 +767,7 @@ app:get("dict", "/project/p:pid/dicts", my_capture_errors(function(self)
     })
     
     local pid = self.params.pid
-    self.project = assert_error(MProject:find(pid))
+    self.project = getProject(mycache, pid)
     self.dicts = assert_error(MDict:select("WHERE pid = ? ORDER BY did ASC", pid))
     for _, d in ipairs(self.dicts) do
         d.pid = pid
@@ -760,7 +816,7 @@ app:get("dictlog", "/project/p:pid/dict/d:did", my_capture_errors(function(self)
     })
     
     local pid = self.params.pid
-    self.project = assert_error(MProject:find(pid))
+    self.project = getProject(mycache, pid)
     self.dict = assert_error(MDict:find(self.params.did))
     self.dictlogs = assert_error(db.select("l.dlogid, l.did, l.ndstr, u.uname, l.utime FROM tr_dictlog l, tr_user u WHERE l.uid = u.uid AND did = ? ORDER BY l.utime", self.params.did))
     for _, dl in ipairs(self.dictlogs) do
@@ -794,7 +850,7 @@ app:get("download", "/project/p:pid/downloads", my_capture_errors(function(self)
     })
     
     local pid = self.params.pid
-    self.project = assert_error(MProject:find(pid))
+    self.project = getProject(mycache, pid)
     
     self.files = {}
     local dir = "download/" .. pid
@@ -819,7 +875,7 @@ app:get("checklines", "/project/p:pid/checklines", my_capture_errors(function(se
     assert_error(self.admin_state, "生成新更新文件需要管理员权限！")
     
     local pid = self.params.pid
-    self.project = assert_error(MProject:find(pid))
+    self.project = getProject(mycache, pid)
     
     self.prevtime = self.project.lastupdate
     self.curtime = db.format_date()
@@ -841,7 +897,7 @@ app:get("checkdicts", "/project/p:pid/checkdicts(/t:time)", my_capture_errors(fu
     assert_error(self.admin_state, "生成新更新文件需要管理员权限！")
     
     local pid = self.params.pid
-    self.project = assert_error(MProject:find(pid))
+    self.project = getProject(mycache, pid)
     
     self.prevtime = self.project.lastupdate
     self.curtime = self.params.time and util.unescape(self.params.time) or db.format_date()
@@ -863,7 +919,7 @@ app:get("genupdate", "/project/p:pid/genupdate/t:time", my_capture_errors(functi
     assert_error(self.admin_state, "生成新更新文件需要管理员权限！")
     
     local pid = self.params.pid
-    local project = assert_error(MProject:find(pid))
+    local project = getProject(mycache, pid)
     
     local prevtime = project.lastupdate
     local curtime = self.params.time and util.unescape(self.params.time) or db.format_date()
@@ -875,8 +931,7 @@ app:get("genupdate", "/project/p:pid/genupdate/t:time", my_capture_errors(functi
     output:write(cjson.encode(lines))
     output:close()
     
-    project.lastupdate = curtime
-    assert_error(project:update("lastupdate"))
+    updateProjectLU(mycache, project, curtime)
     
     return { redirect_to = self:url_for("download", self.params) }
 end))
@@ -887,7 +942,7 @@ app:get("comment", "/project/p:pid/comments", my_capture_errors(function(self)
     })
     local pid = self.params.pid
     
-    self.project = assert_error(MProject:find(pid))
+    self.project = getProject(mycache, pid)
     
     if self.admin_state then
         self.comments = assert_error(db.select("u.uid, u.uname, c.cid, c.pid, c.utime, c.content, c.cacc, c.ctop FROM tr_comment c, tr_user u WHERE u.uid = c.uid AND c.pid = ? ORDER BY c.ctop DESC, c.utime DESC", pid))
@@ -909,7 +964,7 @@ app:post("comment", "/project/p:pid/comments", my_capture_errors(function(self)
     assert_error(self.current_user, "留言必须登录！")
     
     local pid = self.params.pid
-    local project = assert_error(MProject:find(pid))
+    local project = getProject(mycache, pid)
     local acc = (self.params.access and self.params.access == "private") and 1 or 0
     local top = (self.admin_state and self.params.top and self.params.top == "top") and 1 or 0
     
@@ -979,7 +1034,7 @@ app:get("other", "/project/p:pid/others", my_capture_errors(function(self)
         { "pid", exists = true, is_integer = true }
     })
     
-    self.project = assert_error(MProject:find(self.params.pid))
+    self.project = getProject(mycache, self.params.pid)
     return { render = true }
 end))
 
@@ -994,7 +1049,7 @@ app:post("search", "/project/p:pid/others/search", my_capture_errors(function(se
     self.stype = self.params.searchtype
     self.skey = self.params.searchkey
     
-    self.project = assert_error(MProject:find(pid))
+    self.project = getProject(mycache, pid)
     
     if self.stype == "orgstr" then
         self.lines = assert_error(db.select("f.pid, f.fid, l.lid, l.orgstr, l.trstr FROM tr_line l, tr_file f WHERE f.pid = ? AND f.fid = l.fid AND orgstr REGEXP ?", 
@@ -1022,7 +1077,7 @@ app:post("replace", "/project/p:pid/others/replace", my_capture_errors(function(
     local sword = self.params.sword
     local dword = self.params.dword
     
-    self.project = assert_error(MProject:find(pid))
+    self.project = getProject(mycache, pid)
     
     local lines = assert_error(db.select("f.pid, f.fid, l.lid, l.orgstr, l.trstr FROM tr_line l, tr_file f WHERE f.pid = ? AND f.fid = l.fid AND trstr REGEXP ?", 
             pid, sword))
@@ -1052,6 +1107,65 @@ app:post("replace", "/project/p:pid/others/replace", my_capture_errors(function(
     return { render = true }
 end))
 
+local function uploadUpdateRenpyFile(project, file, lines, content)
+    local curline = 1
+    local appendlines = {}
+    
+    local offset, line = 1, 1
+    local trhead
+    local count, ntred = 0, 0
+    while true do
+        local noff, lid, desc, orgstr, trstr, ntrhead = getRenpyLine(content, offset, line, trhead)
+        
+        if noff then
+            if curline <= #lines then
+                local ldata = lines[curline]
+                assert_error(ldata.lid == lid and ldata.orgstr == orgstr, "不支持该种更新！")
+            else
+                local ldata = assert_error(MLine:create({
+                    lid = lid,
+                    fid = file.fid,
+                    ldesc = desc or "",
+                    orgstr = orgstr,
+                    trstr = ""
+                }))
+                if trstr ~= "" then
+                    local logdata = assert_error(MLog:create({
+                        fid = file.fid,
+                        lid = ldata.lid,
+                        uid = 1,
+                        utime = db.format_date(1000000),
+                        bfstr = trstr
+                    }))
+                    ldata.nupd = 1
+                    ldata.acceptlog = logdata.logid
+                    ldata.trstr = trstr
+                    assert_error(ldata:update("nupd", "acceptlog", "trstr"))
+                    ntred = ntred + 1
+                end
+                count = count + 1
+                
+                ldata.pid = project.pid
+                table.insert(appendlines, ldata)
+            end
+            
+            offset = noff
+            line = lid + 1
+            trhead = ntrhead
+            curline = curline + 1
+        else
+            break
+        end
+    end
+    
+    if count > 0 then
+        updateFileStatistics(mycache, file, count, ntred)
+        updateProjectStatistics(mycache, project, 0, count, ntred)
+    end
+    
+    return appendlines
+end
+
 app:post("uploadupdate", "/project/p:pid/others/uploadupdate", my_capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
@@ -1065,8 +1179,9 @@ app:post("uploadupdate", "/project/p:pid/others/uploadupdate", my_capture_errors
     local uptype = self.params.uploadtype
     local upfile = self.params.uploadfile
     
-    local project = assert_error(MProject:find(pid))
+    local project = getProject(mycache, pid)
     local file = assert_error(MFile:find({ pid = pid, fname = upfile.filename }), "找不到指定文件！")
+    file = getFile(mycache, file.fid)
     local lines = MLine:select("where fid = ? ORDER BY lid", file.fid)
     
     assert_error(uptype == "renpy", "不支持的上传类型！")
@@ -1088,18 +1203,20 @@ app:post("deletefile", "/project/p:pid/others/deletefile", my_capture_errors(fun
     
     assert_error(self.admin_state, "删除文件需要管理员权限！")
     
-    local project = assert_error(MProject:find(self.params.pid))
-    local file = assert_error(MFile:find({ pid = project.pid, fname = self.params.filename }), "找不到指定文件！")
+    local pid = self.params.pid
+    
+    local file = assert_error(MFile:find({ pid = pid, fname = self.params.filename }), "找不到指定文件！")
+    file = getFile(mycache, file.fid)
+    
+    local project = getProject(mycache, pid)
+    updateProjectStatistics(mycache, project, -1, -file.nline, -file.ntred)
+    
+    dropFilePrevNext(mycache, pid, file.fid)
+    dropAllFiles(mycache, pid, project.nfile)
     
     assert_error(db.delete("tr_log", { fid = file.fid }))
     assert_error(db.delete("tr_line", { fid = file.fid }))
     assert_error(db.delete("tr_file", { fid = file.fid }))
-    
-    project.pfile = project.pfile - 1
-    project.pline = project.pline - file.fline
-    project.ntred = project.ntred - file.ntred
-    
-    project:update("pfile", "pline", "ntred")
     
     return { redirect_to = self:url_for("project", project) }
 end))
@@ -1113,7 +1230,7 @@ app:get("untred", "/project/p:pid/others/untred(/n:num)", my_capture_errors(func
     local pid = self.params.pid
     local num = tonumber(self.params.num)
     
-    self.project = assert_error(MProject:find(pid))
+    self.project = getProject(mycache, pid)
     
     self.lines = assert_error(db.select("f.pid, l.fid, l.lid, l.orgstr, l.trstr FROM tr_file f, tr_line l WHERE f.pid = ? AND f.fid = l.fid AND l.nupd = 0 ORDER BY l.fid, l.lid LIMIT ?",
         pid, num))

@@ -11,7 +11,7 @@
                     </h3>
                     <p><%= file.fdesc %></p>
                     <p>
-                        共 <span class="text-warning"><%= file.fline %></span> 行，
+                        共 <span class="text-warning"><%= file.nline %></span> 行，
                         已翻译 <span class="text-warning"><%= file.ntred %></span> 行，
                         共 <span class="text-warning"><%= pageCount %></span> 页，
                         第 <span class="text-warning"><%= pageIndex %></span> 页

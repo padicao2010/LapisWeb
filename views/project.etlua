@@ -17,9 +17,9 @@
                         <li role="presentation"><a href="<%= url_for("other", project) %>">其他</a></li>
                     </ul>
                     <p>
-                        共 <span class="text-warning"><%= project.pline %></span> 行，
+                        共 <span class="text-warning"><%= project.nline %></span> 行，
                         已翻译 <span class="text-warning"><%= project.ntred %></span> 行，
-                        共 <span class="text-warning"><%= project.pfile %></span> 个文件，
+                        共 <span class="text-warning"><%= project.nfile %></span> 个文件，
                         共 <span class="text-warning"><%= pageCount %></span> 页，
                         第 <span class="text-warning"><%= pageIndex %></span> 页
                         
@@ -83,7 +83,7 @@
                                 <%= f.fname %>
                             </h4>
                             <p>
-                                共 <span class="text-warning"><%= f.fline %></span> 行，
+                                共 <span class="text-warning"><%= f.nline %></span> 行，
                                 已翻译 <span class="text-warning"><%= f.ntred %></span> 行
                             </p>
                         </a>
