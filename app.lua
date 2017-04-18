@@ -826,7 +826,7 @@ app:get("setlog", "/project/p:pid/file/f:fid/line/l:lid/set/log:logid", my_captu
     return { redirect_to = self:url_for("log", self.params) }
 end))
 
-app:get("logfile", "/project/p:pid/file/f:fid/line/l:lid", my_capture_errors(function(self)
+app:get("logfile", "/project/p:pid/file/f:fid/line/l:lid/backfile", my_capture_errors(function(self)
     validate.assert_valid(self.params, {
         { "pid", exists = true, is_integer = true },
         { "fid", exists = true, is_integer = true },
