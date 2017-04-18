@@ -209,7 +209,7 @@ local function dropFiles(cache, pid, page)
 end
 
 local function dropAllFiles(cache, pid, nfile)
-    local pageCount = math.floor(nfile - 1) / PER_PAGE + 1;
+    local pageCount = math.ceil(nfile / PER_PAGE);
     for i = 1, pageCount do
         local key = "p" .. pid .. "fs" .. i
         cache:delete(key)
@@ -641,7 +641,7 @@ app:post("project", "/project/p:pid/files(/page:pageid)", my_capture_errors(func
     if nfile > 0 then
         local project = getProject(mycache, pid)
         local nfile = updateProjectStatistics(mycache, project, nfile, count, ntred)
-        dropFiles(mycache, pid, math.floor((nfile - 1) / PER_PAGE) + 1)
+        dropFiles(mycache, pid, math.ceil(nfile / PER_PAGE))
         
         dropFilePrevNext(mycache, pid, firstfid)
         
@@ -824,6 +824,25 @@ app:get("setlog", "/project/p:pid/file/f:fid/line/l:lid/set/log:logid", my_captu
     assert_error(line:update("acceptlog", "trstr"))
     
     return { redirect_to = self:url_for("log", self.params) }
+end))
+
+app:get("logfile", "/project/p:pid/file/f:fid/line/l:lid", my_capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "pid", exists = true, is_integer = true },
+        { "fid", exists = true, is_integer = true },
+        { "lid", exists = true, is_integer = true },
+    })
+    
+    local pid = self.params.pid
+    local fid = self.params.fid
+    local lid = self.params.lid
+    local count = assert(db.select("COUNT(*) FROM tr_line WHERE fid = ? AND lid <= ?", 
+        fid, lid))[1]["COUNT(*)"]
+        
+    local pageIndex = math.ceil(count / PER_PAGE)
+    local f = { pid = pid, fid = fid, lid = lid, pageid = pageIndex }
+    
+    return { redirect_to = self:url_for("file", f) }
 end))
 
 app:get("dict", "/project/p:pid/dicts", my_capture_errors(function(self)
