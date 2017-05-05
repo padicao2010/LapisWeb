@@ -4,7 +4,7 @@ user=test
 password=test
 database=test
 dbtoken=test
-filename=yurifff-backup-`date +%s`.sql
+filename=yurifff-backup-`date +%Y%m%d%H%M%S`.sql
 filegzname=${filename}.tgz
 
 echo ==DUMP MySQL==
