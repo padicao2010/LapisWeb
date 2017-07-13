@@ -16,7 +16,7 @@
                         <li role="presentation"><a href="<%= url_for("comment", project) %>">留言</a></li>
                         <li role="presentation"><a href="<%= url_for("other", project) %>">其他</a></li>
                     </ul>
-                    <form class="form-inline">
+                    <form class="form-inline" action="<%= url_for("project", { pid = params.pid }) %>">
                         <label for="pageIndex">
                           共 <span class="text-warning"><%= project.nline %></span> 行，
                           已翻译 <span class="text-warning"><%= project.ntred %></span> 行，
