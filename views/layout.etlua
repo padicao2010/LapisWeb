@@ -47,5 +47,6 @@
         <% content_for("inner") %>
         <script src="//cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
         <script src="//cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <script src="/static/js/myapp.js"></script>
     </body>
 </html>

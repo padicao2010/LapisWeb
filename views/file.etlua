@@ -10,22 +10,12 @@
                         <%= file.fname %>
                     </h3>
                     <p><%= file.fdesc %></p>
-                    <form class="form-inline" action="<%= url_for("file", { pid = params.pid, fid = params.fid }) %>">
-                      <div class="form-group">
-        
-                        <label for="pageIndex">
-                          共 <span class="text-warning"><%= file.nline %></span> 行，
-                          已翻译 <span class="text-warning"><%= file.ntred %></span> 行，
-                          共 <span class="text-warning"><%= pageCount %></span> 页
-                        </label>
-                        <div class="input-group">
-                          <div class="input-group-addon">第</div>
-                          <input id="pageIndex" class="form-control" type="number" name="pageid" value="<%= pageIndex %>" required="required">
-                          <div class="input-group-addon">页</div>
-                          <button type="submit" class="form-control">GO</button>
-                        </div>
-                      </div>
-                    </form>
+                    <p>
+                        共 <span class="text-warning"><%= file.nline %></span> 行，
+                        已翻译 <span class="text-warning"><%= file.ntred %></span> 行，
+                        共 <span class="text-warning"><%= pageCount %></span> 页，
+                        第 <span class="text-warning"><%= pageIndex %></span> 页
+                    </p>
                     <hr>
                 </div>
                 <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
@@ -61,6 +51,9 @@
                         <li class="<%= pageIndex<=1 and 'disabled' or '' %>"><a href="<%= pageIndex>1 and url_for('file', { pid=file.pid,fid=file.fid,pageid=pageIndex-1 }) or '#' %>">
                             上一页
                         </a></li>
+                        <li>
+                            <input type="number" id="pageChanger" value="<%= pageIndex %>">
+                        </li>
                         <li class="<%= pageIndex>=pageCount and 'disabled' or '' %>"><a href="<%= pageIndex<pageCount and url_for('file', { pid=file.pid,fid=file.fid,pageid=pageIndex+1 }) or '#' %>">
                             下一页
                         </a></li>
