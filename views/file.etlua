@@ -52,7 +52,8 @@
                             上一页
                         </a></li>
                         <li>
-                            <input type="number" id="pageChanger" value="<%= pageIndex %>">
+                            <input type="number" id="pageChanger" value="<%= pageIndex %>"
+                                style="width:50px; text-align:center">
                         </li>
                         <li class="<%= pageIndex>=pageCount and 'disabled' or '' %>"><a href="<%= pageIndex<pageCount and url_for('file', { pid=file.pid,fid=file.fid,pageid=pageIndex+1 }) or '#' %>">
                             下一页
