@@ -22,7 +22,7 @@ local function filterString(s)
     ns = string.match(ns, "\"(.*)\"")
     ns = ns or s
   end
-  ns = string.gsub(ns, "<[^>]*>", "")
+  ns = string.gsub(ns, "{[^}]*}", "")
   ns = string.gsub(ns, "#c.%d", "")
 
   return ns
