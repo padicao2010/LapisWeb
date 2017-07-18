@@ -7,6 +7,7 @@ local date = require("date")
 local db = require("lapis.db")
 local util = require("lapis.util")
 local cjson = require("cjson")
+local mstr = require("libs.mstr")
 
 local config = require("lapis.config").get()
 
@@ -1325,6 +1326,17 @@ app:get("untred", "/project/p:pid/others/untred(/n:num)", my_capture_errors(func
         pid, num))
         
     return { render = true }
+end))
+
+app:post("translate", "/translate/tr_:tr", my_capture_errors(function(self)
+    validate.assert_valid(self.params, {
+        { "tr", exists = true },
+        { "src", exists = true }
+    })
+
+    local dest = assert_error(mstr.translate(self.params.tr, "cn", self.params.src))
+
+    return { json = { status = "SUCCESS", dest = dest } }
 end))
 
 return app

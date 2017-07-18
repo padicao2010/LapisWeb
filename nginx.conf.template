@@ -9,6 +9,7 @@ events {
 
 http {
   include mime.types;
+  resolver 8.8.8.8;
   client_max_body_size 30M;
   lua_shared_dict myshare 16M;
 

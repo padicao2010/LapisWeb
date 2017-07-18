@@ -24,9 +24,17 @@
                         <div class="list-group">
                             <p class="list-group-item">
                                 第 <span class="text-danger"><%= l.lid %></span> 行
-                                <a class="label label-default" href="<%= url_for("log", l) %>">
+                                <a class="btn btn-primary btn-xs" href="<%= url_for("log", l) %>">
                                     <%= l.nupd %>条历史记录
                                 </a>
+                                <% if current_user then %>
+                                <a id="tr_en_<%= l.lid %>" class="btn btn-primary btn-xs">
+                                    必应：英
+                                </a>
+                                <a id="tr_jp_<%= l.lid %>" class="btn btn-primary btn-xs">
+                                    必应：日
+                                </a>
+                                <% end %>
                             </p>
                             <p class="list-group-item"><%= l.ldesc %></p>
                             <pre class="list-group-item"><%= l.orgstr %></pre>

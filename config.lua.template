@@ -2,6 +2,7 @@ local config = require("lapis.config")
 
 config("development", {
   port = 8080,
+  mskey = "xxx",
   mysql = {
     host = "127.0.0.1",
     user = "root",
@@ -12,6 +13,7 @@ config("development", {
 
 config("production", {
   port = 80,
+  mskey = "xxx",
   num_workers = 2,
   code_cache = "on",
   mysql = {
