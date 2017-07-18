@@ -17,9 +17,9 @@ local function getLanguageCode(s)
 end
 
 local function filterString(s)
-  local ns
-  if string.match(s, "^# ") or string.match(s, "^old ") then
-    ns = string.match(s, "\"(.*)\"")
+  local ns = s
+  if string.match(ns, "^# ") or string.match(ns, "^old ") then
+    ns = string.match(ns, "\"(.*)\"")
     ns = ns or s
   end
   ns = string.gsub(ns, "<[^>]*>", "")
